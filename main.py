@@ -7,7 +7,7 @@ from discord import app_commands
 from discord.utils import get
 import random
 from datetime import datetime,timedelta
-import server
+#import server
 from guild import *
 from viettel import *
 import vinaphone as vnpt
@@ -15,7 +15,7 @@ import vietnamobile
 import aiohttp
 import ast
 import collections 
-server.b() 
+#server.b() 
 
 
 intents = discord.Intents.default()
