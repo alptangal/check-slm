@@ -63,66 +63,12 @@ def remove_duplicates(l):
   
 @client.event
 async def on_ready():
-    #rs=await vietnamobile.login({'phone': '0927847108', 'transId': None, 'user-agent': 'Vietnamobile/4 CFNetwork/1325.0.1 Darwin/21.1.0', 'x-device-id': 'BA7ABF14-BCC4-47EF-964F-DEF1B9E68541', 'token': 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMDkyNzQ0OTQxNTM3MDk5Nzc2Iiwicm9sZXMiOltdLCJleHAiOjE3MTExMDg5NjUsImlhdCI6MTcxMTEwMDMyNX0.rNA6wQcSK7RLDIMuJB5xlc0JyCh7TeQ14SeaCXRZg-0LNN89-JY0EK40aptX8qmBWV5RLqbfWL1PanHA1R3Jgg', 'requiredOTP': False, 'refreshToken': '41036610-1df7-4d3b-a1cc-3db9271d31ce'})
-    #await  vietnamobile.getInfo({'phone': '0927847108', 'transId': None, 'user-agent': 'Vietnamobile/4 CFNetwork/1325.0.1 Darwin/21.1.0', 'x-device-id': 'BA7ABF14-BCC4-47EF-964F-DEF1B9E68541', 'token': 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMDkyNzQ0OTQxNTM3MDk5Nzc2Iiwicm9sZXMiOltdLCJleHAiOjE3MTExMDg5NjUsImlhdCI6MTcxMTEwMDMyNX0.rNA6wQcSK7RLDIMuJB5xlc0JyCh7TeQ14SeaCXRZg-0LNN89-JY0EK40aptX8qmBWV5RLqbfWL1PanHA1R3Jgg', 'requiredOTP': False, 'refreshToken': '41036610-1df7-4d3b-a1cc-3db9271d31ce'})
-    '''headers={
-      'user-agent':'Vietnamobile/4 CFNetwork/1325.0.1 Darwin/21.1.0',
-      'x-device-id':'BA7ABF14-BCC4-47EF-964F-DEF1B9E68541'
-    }'''
-    '''url='https://selfcare.vietnamobile.com.vn/api/account/register'
-    headers={
-      'user-agent':'Vietnamobile/4 CFNetwork/1325.0.1 Darwin/21.1.0'
-    }
-    data={
-      'msisdn':'+84564961405'
-    }
-    req=requests.post(url,headers=headers,json=data)
-    print(req.json())'''
-    '''headers={
-      'user-agent':'Vietnamobile/4 CFNetwork/1325.0.1 Darwin/21.1.0'
-    }
-    url='https://selfcare.vietnamobile.com.vn/api/account/register/confirm'
-    data={
-      "transId": "4eb993f032781803",
-      "otp": "174384",
-      "password": "123123_Qwe"
-    }
-    req=requests.post(url,headers=headers,json=data)
-    print(req.json())'''
-    '''url='https://selfcare.vietnamobile.com.vn/api/auth/loginPassword'
-    data={
-      "msisdn": "+84564961405",
-      "password": "123123_Qwe"
-    }
-    req=requests.post(url,headers=headers,json=data)
-    tk=(req.json())['data']['token']
-    url='https://selfcare.vietnamobile.com.vn/api/profile'
-    headers['Authorization']='Bearer '+tk
-    req=requests.get(url,headers=headers)
-    print(req.json())'''
     global HEADERS, THREADS, USERNAMES,RESULT
     guild = client.get_guild(GUILDID)
-
-    '''if not ping.is_running():
-        ping.start()'''
     #await tree.sync(guild=discord.Object(id=GUILDID))
     RESULT=await getBasic(guild) 
-    '''async for msg in RESULT['rawsCh'].history():
-      phone=msg.content
-      print(phone)
-      if phone not in str(RESULT['phonesCh'].threads): 
-        thread=await RESULT['phonesCh'].create_thread(name=phone,content='loading...')
-        rs=await sendOtp(phone)
-        if rs:
-          await thread.thread.send('New otp sent to '+phone)'''
-    if not taskUpdatePhone.is_running():
-      taskUpdatePhone.start(guild)
-    if not taskLogin.is_running():
-      taskLogin.start(guild)
     if not taskGetInfo.is_running():
       taskGetInfo.start(guild)
-    if not taskSendOtp.is_running():
-      taskSendOtp.start(guild)
     
 @tasks.loop(seconds=1)
 async def taskKeepCookie(guild):
@@ -254,6 +200,7 @@ async def taskLogin(guild):
           pass
 @tasks.loop(seconds=1)  
 async def taskGetInfo(guild):
+  print('taskGetInfo is running')
   RESULT=await getBasic(guild)
   phoneCh=RESULT['phonesCh'].threads+[thread async for thread in RESULT['phonesCh'].archived_threads()]
   for thread in phoneCh:
@@ -282,16 +229,16 @@ async def taskGetInfo(guild):
                 embed.add_field(name="Birthday", value=js['birthday'],inline=True)
                 embed.add_field(name=" ", value='',inline=False)
                 for i,item in enumerate(js['extraInfo']):
-                  if i==0 and int(item['value'])<5000:
+                  if i==0 and 'value' in item and int(item['value'])<5000:
                     caution.append('**Balance too low**')
-                  if item['expire']:
+                  if 'expire' in item and item['expire']:
                     expired=datetime.datetime.strptime(item['expire'],f'%m/%d/%Y %H:%M:%S %p')
                     expired=expired.strftime('%d/%m/%Y %H:%M:%S %p')
                     if item['name']=='Tài khoản gốc':
                       exp=datetime.datetime.strptime(item['expire'],f'%m/%d/%Y %H:%M:%S %p')
                       if datetime.datetime.now().timestamp()-exp.timestamp()>4320000:
                         caution.append('**Balance expried soon**')
-                  embed.add_field(name=item['name'], value=str(item['value'])+' '+item['unit']+' - expire: '+str(expired),inline=True)
+                  embed.add_field(name=item['name'] if 'name' in item else None, value=(str(item['value']) if 'value' in item else 'None')+' '+(item['unit'] if 'unit' in item else 'None')+' - expire: '+str(expired),inline=True)
                 embed.add_field(name=" ", value='',inline=False)
                 embed.add_field(name="Points", value=js['viettelPlusInfo']['point_can_used'],inline=True)
                 embed.add_field(name="Point Expire", value=js['viettelPlusInfo']['point_expired'],inline=True)
@@ -347,7 +294,8 @@ async def taskGetInfo(guild):
                     exp=datetime.datetime.strptime(item['ACC_EXPIRATION'],f'%d/%m/%Y %H:%M:%S')
                     if datetime.datetime.now().timestamp()-exp.timestamp()>4320000:
                       caution.append('**Balance expried soon**')
-                  embed.add_field(name=item['BALANCE_NAME'], value=str(item['REMAIN'])+' đồng- expire: '+str(item['ACC_EXPIRATION']),inline=True)
+                  
+                  embed.add_field(name=item['BALANCE_NAME'] if 'BALANCE_NAME' in item else 'None', value=(str(item['REMAIN']) if 'REMAIN' in item else 'None')+' đồng- expire: '+str(item['ACC_EXPIRATION']),inline=True)
                 embed.add_field(name='Băng thông tốc độ cao', value=js['text_high_bandwidth_volume_remain']+'/ '+js['text_high_bandwidth_volume_total'],inline=True)
                 embed.add_field(name=" ", value='',inline=False)
                 embed.add_field(name="Rank", value=js['rank'],inline=True)
@@ -377,12 +325,12 @@ async def taskGetInfo(guild):
                   #await msgs[len(msgs)-1].delete()
                   for i,msg in enumerate(msgs):
                     if i>1:
-                      await msg.delete
+                      await msg.delete()
                   await thread.send(owner.mention+'\n')
                 elif len(caution)==0 and len(msgs)>2:
                   for i,msg in enumerate(msgs):
                     if i>1:
-                      await msg.delete
+                      await msg.delete()
                 for noti in caution:
                   await thread.send(f'⚠️ {noti} 🆘\n')
               '''except Exception as err:
@@ -446,11 +394,8 @@ async def taskGetInfo(guild):
                 await thread.send(owner.mention+'\n')
               for noti in caution:
                 await thread.send(f'⚠️ {noti} 🆘\n')
-          '''except Exception as err:
-            print(err)
-            rs=False'''
       except Exception as err:
-        print(err,444)
+        print(err,1111)
         pass
 @tasks.loop(seconds=3)
 async def ping(): 
