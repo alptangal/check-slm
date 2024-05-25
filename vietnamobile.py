@@ -1,4 +1,4 @@
-import requests
+import httpx
 from bs4 import BeautifulSoup as Bs4
 import time
 import os
@@ -8,8 +8,7 @@ from urllib.parse import unquote
 import aiohttp
 import urllib3,re
 import json
-requests.packages.urllib3.disable_warnings()
-requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += 'HIGH:!DH:!aNULL'
+httpx._config.DEFAULT_CIPHERS += ':HIGH:!DH:!aNULL'
 async def sendOtp(phone):
   headers={
     'user-agent':'Vietnamobile/4 CFNetwork/1325.0.1 Darwin/21.1.0',
@@ -20,7 +19,7 @@ async def sendOtp(phone):
     'msisdn':'+84'+phone[1:]
   }
   print(data)
-  req=requests.post(url,headers=headers,json=data)
+  req=httpx.post(url,headers=headers,json=data)
   if req.status_code<400:
     js=req.json()
     if js['code']==None:
@@ -38,7 +37,7 @@ async def register(headers,otp):
     "otp": otp,
     "password": "123123_Qwe"
   }
-  #req=requests.post(url,headers=headers,json=data)
+  #req=httpx.post(url,headers=headers,json=data)
   async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar()) as session:
     async with session.post(url,headers=headers,json=data) as res:
       js=await res.json()
@@ -61,7 +60,7 @@ async def login(headers):
     "msisdn": "+84"+headers['phone'][1:],
     "password": "123123_Qwe"
   }
-  req=requests.post(url,headers=header,json=data)
+  req=httpx.post(url,headers=header,json=data)
   if req.status_code<400:
     js=req.json()
     if js['code']==None:
@@ -78,13 +77,13 @@ async def getInfo(headers):
     'x-device-id':headers['x-device-id'],
     'authorization':'Bearer '+headers['token']
   }
-  req=requests.get(url,headers=header)
+  req=httpx.get(url,headers=header)
   if req.status_code<400:
     js=req.json()
     if js['code']==None:
       js=js['data']
       url='https://selfcare.vietnamobile.com.vn/api/profile/personalInfo'
-      req=requests.get(url,headers=header)
+      req=httpx.get(url,headers=header)
       if req.status_code<400:
         js1=req.json()
         if js1['code']==None:
