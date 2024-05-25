@@ -486,4 +486,4 @@ async def first_command(interaction):
             await msg.delete()
     if not notEdit:
         await interaction.edit_original_response(content='Need update!')
-client.run(os.eviron.get('botToken'))
+client.run(os.environ.get('botToken'))
