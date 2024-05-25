@@ -67,30 +67,15 @@ async def on_ready():
     guild = client.get_guild(GUILDID)
     #await tree.sync(guild=discord.Object(id=GUILDID))
     RESULT=await getBasic(guild) 
-<<<<<<< HEAD
     if not taskGetInfo.is_running():
       taskGetInfo.start(guild)
-=======
-    '''async for msg in RESULT['rawsCh'].history():
-      phone=msg.content
-      print(phone)
-      if phone not in str(RESULT['phonesCh'].threads): 
-        thread=await RESULT['phonesCh'].create_thread(name=phone,content='loading...')
-        rs=await sendOtp(phone)
-        if rs:
-          await thread.thread.send('New otp sent to '+phone)'''
-    if not taskGetInfo.is_running():
-      taskGetInfo.start(guild)
-    '''
     if not taskUpdatePhone.is_running():
       taskUpdatePhone.start(guild)
     if not taskLogin.is_running():
       taskLogin.start(guild)
-    
     if not taskSendOtp.is_running():
       taskSendOtp.start(guild)
-    '''
->>>>>>> 6c8d50a9011435ee3727413c74abb86ad5d43502
+
     
 @tasks.loop(seconds=1)
 async def taskKeepCookie(guild):
@@ -304,7 +289,7 @@ async def taskGetInfo(guild):
                 embed = discord.Embed(title='0'+js['MA_TB'][2:], description=js['LOAI']+'/ '+('Trả sau' if js['TRA_SAU']=="1" else 'Trả trước'),colour=discord.Colour.blue()) #,color=Hex code
                 embed.add_field(name="Owner", value=js['TEN_TB'],inline=True)
                 embed.add_field(name="CCCD", value=js['SO_GT'],inline=True)
-                embed.add_field(name="CCCD_Date", value=js['NGAYCAP_GT'],inline=True)
+                embed.add_field(name="CCCD_Date", value=js['NGAYCAP_GT'] if 'NGAYCAP_GT' in js else None,inline=True)
                 embed.add_field(name="Location", value=js['DIACHI'],inline=True) 
                 embed.add_field(name="Birthday", value=js['NGAYSINH'],inline=True)
                 embed.add_field(name=" ", value='',inline=False)
@@ -317,7 +302,7 @@ async def taskGetInfo(guild):
                     if datetime.datetime.now().timestamp()-exp.timestamp()>4320000:
                       caution.append('**Balance expried soon**')
                   
-                  embed.add_field(name=item['BALANCE_NAME'] if 'BALANCE_NAME' in item else 'None', value=(str(item['REMAIN']) if 'REMAIN' in item else 'None')+' đồng- expire: '+str(item['ACC_EXPIRATION']),inline=True)
+                  embed.add_field(name=item['BALANCE_NAME'] if 'BALANCE_NAME' in item else 'None', value=(str(item['REMAIN']) if 'REMAIN' in item else 'None')+' đồng- expire: '+(str(item['ACC_EXPIRATION']) if 'ACC_EXPIRATION' in item else 'None'),inline=True)
                 embed.add_field(name='Băng thông tốc độ cao', value=js['text_high_bandwidth_volume_remain']+'/ '+js['text_high_bandwidth_volume_total'],inline=True)
                 embed.add_field(name=" ", value='',inline=False)
                 embed.add_field(name="Rank", value=js['rank'],inline=True)
@@ -502,4 +487,4 @@ async def first_command(interaction):
             await msg.delete()
     if not notEdit:
         await interaction.edit_original_response(content='Need update!')
-client.run(os.environ.get('botToken'))
+client.run(os.eviron.get('botToken'))
