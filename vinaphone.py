@@ -1,4 +1,4 @@
-import requests
+import httpx
 from bs4 import BeautifulSoup as Bs4
 import time
 import os
@@ -7,10 +7,13 @@ import random,json
 from urllib.parse import unquote
 import aiohttp
 import urllib3,re
+<<<<<<< HEAD
 import httpx
 requests.packages.urllib3.disable_warnings()
 requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += 'HIGH:!DH:!aNULL'
 
+=======
+>>>>>>> 6c8d50a9011435ee3727413c74abb86ad5d43502
 httpx._config.DEFAULT_CIPHERS += ':HIGH:!DH:!aNULL'
 async def sendOtp(phone):
   url='https://my.vnpt.com.vn/mapi/services/otp_send'
