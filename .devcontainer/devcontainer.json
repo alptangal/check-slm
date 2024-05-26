@@ -22,12 +22,12 @@
     "server": "python main.py"
   },
   "portsAttributes": {
-    "8501": {
+    "8999": {
       "label": "Application",
       "onAutoForward": "openPreview"
     }
   },
   "forwardPorts": [
-    8501
+    8999
   ]
 }
