@@ -351,9 +351,6 @@ async def taskGetInfo(guild):
                       await msg.delete()
                 for noti in caution:
                   await thread.send(f'⚠️ {noti} 🆘\n')
-              '''except Exception as err:
-                print(err)
-                rs=False'''
         elif any(item.strip() in thread.name for item in VIETNAMOBILE): 
           msgs=[msg async for msg in thread.history(oldest_first=True)]
           if len(msgs)==1 and 'loading' not in msgs[0].content or 'token' in msgs[0].content:
