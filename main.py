@@ -69,12 +69,7 @@ async def on_ready():
     RESULT=await getBasic(guild) 
     if not taskGetInfo.is_running():
       taskGetInfo.start(guild)
-    if not taskUpdatePhone.is_running():
-      taskUpdatePhone.start(guild)
-    if not taskSendOtp.is_running():
-      taskSendOtp.start(guild)
-    if not taskLogin.is_running():
-      taskLogin.start(guild)
+    
     
 
     
@@ -204,7 +199,7 @@ async def taskLogin(guild):
               else:
                 await thread.send(rs['message'])
         except Exception as error:
-          print(error,333)
+          print(error,3333)
           pass
 @tasks.loop(seconds=1)  
 async def taskGetInfo(guild):

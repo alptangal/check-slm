@@ -48,29 +48,30 @@ async def register(headers,otp):
         if js['code']==None:
           print(f'{headers["phone"]} register success')
           headers=headers|js['data']
-          
+          #print(headers)
           return {'result':True,'headers':headers}
       print(f'{headers["phone"]} can\'t register')
       return {'result':False,'message':js['message']}
 
 async def login(headers):
   url='https://selfcare.vietnamobile.com.vn/api/auth/loginPassword'
+  print(headers)
   header={
-    'user-agent':headers['user-agent'],
-    'x-device-id':headers['x-device-id']
+    'user-agent':headers['headers']['user-agent'],
+    'x-device-id':headers['headers']['x-device-id']
   }
   data={
-    "msisdn": "+84"+headers['phone'][1:],
+    "msisdn": "+84"+headers['headers']['phone'][1:],
     "password": "123123_Qwe"
   }
   req=httpx.post(url,headers=header,json=data)
   if req.status_code<400:
     js=req.json()
     if js['code']==None:
-      print(f'{headers["phone"]} login success')
-      headers['token']=js['data']['token']
+      print(f'{headers["headers"]["phone"]} login success')
+      headers['headers']['token']=js['data']['token']
       return headers
-  print(f'{headers["phone"]} can\'t login')
+  print(f'{headers["headers"]["phone"]} can\'t login')
   return False
   
 async def getInfo(headers):

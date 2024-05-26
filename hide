@@ -1,0 +1,6 @@
+if not taskUpdatePhone.is_running():
+      taskUpdatePhone.start(guild)
+    if not taskSendOtp.is_running():
+      taskSendOtp.start(guild)
+    if not taskLogin.is_running():
+      taskLogin.start(guild)
