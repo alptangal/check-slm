@@ -67,24 +67,8 @@ async def on_ready():
     guild = client.get_guild(GUILDID)
     #await tree.sync(guild=discord.Object(id=GUILDID))
     RESULT=await getBasic(guild) 
-
-    '''async for msg in RESULT['rawsCh'].history():
-      phone=msg.content
-      print(phone)
-      if phone not in str(RESULT['phonesCh'].threads): 
-        thread=await RESULT['phonesCh'].create_thread(name=phone,content='loading...')
-        rs=await sendOtp(phone)
-        if rs:
-          await thread.thread.send('New otp sent to '+phone)'''
     if not taskGetInfo.is_running():
       taskGetInfo.start(guild)
-    
-    '''if not taskUpdatePhone.is_running():
-      taskUpdatePhone.start(guild)
-    if not taskLogin.is_running():
-      taskLogin.start(guild)
-    if not taskSendOtp.is_running():
-      taskSendOtp.start(guild)'''
     
 
     
