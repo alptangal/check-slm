@@ -79,12 +79,12 @@ async def on_ready():
     if not taskGetInfo.is_running():
       taskGetInfo.start(guild)
     
-    if not taskUpdatePhone.is_running():
+    '''if not taskUpdatePhone.is_running():
       taskUpdatePhone.start(guild)
     if not taskLogin.is_running():
       taskLogin.start(guild)
     if not taskSendOtp.is_running():
-      taskSendOtp.start(guild)
+      taskSendOtp.start(guild)'''
     
 
     
