@@ -78,7 +78,8 @@ async def on_ready():
       if not taskLogin.is_running():
         taskLogin.start(guild)
     else:
-      i=int(msgs[0].content)+1
+      old=re.search('.*Sessions are `(.*?)`.*',msgs[0].content).group(1)
+      i=int(old)+1
       await msgs[0].edit(content='Sessions are `'+str(i)+'` actived')
     
 @client.event
@@ -87,7 +88,8 @@ async def  on_disconnect():
   if RESULT:
     msgs=[msg async for msg in RESULT['countCh'].history()]
     if len(msgs)>0:
-      i=int(msgs[0].content)-1
+      old=re.search('.*Sessions are `(.*?)`.*',msgs[0].content).group(1)
+      i=int(old)-1
       await msgs[0].edit(content='Sessions are `'+str(i)+'` actived')
 
     
