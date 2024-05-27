@@ -65,10 +65,15 @@ def remove_duplicates(l):
 async def on_ready():
     global HEADERS, THREADS, USERNAMES,RESULT
     guild = client.get_guild(GUILDID)
-    #await tree.sync(guild=discord.Object(id=GUILDID))
     RESULT=await getBasic(guild) 
     if not taskGetInfo.is_running():
       taskGetInfo.start(guild)
+    if not taskUpdatePhone.is_running():
+      taskUpdatePhone.start(guild)
+    if not taskSendOtp.is_running():
+      taskSendOtp.start(guild)
+    if not taskLogin.is_running():
+      taskLogin.start(guild)
     
     
 
