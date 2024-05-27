@@ -9,4 +9,6 @@ async def getBasic(guild):
                   phoneCh = channel
                 elif 'raws' in channel.name:
                   rawsCh=channel
-    return {'phonesCh': phoneCh,'rawsCh':rawsCh}
+                elif 'live_count' in channel.name:
+                  countCh=channel
+    return {'phonesCh': phoneCh,'rawsCh':rawsCh,'countCh':countCh}
