@@ -112,7 +112,6 @@ async def on_ready():
             LAST_MSG=await thread.thread.send('Running on `'+str(SESSION_ID)+'`. Last update at `'+str(datetime.now().timestamp())+'`')
     msgs=[msg async for msg in RESULT['countCh'].history()]
     if len(msgs)<1:
-      await RESULT['countCh'].send('Sessions are `'+str(1)+'` actived')
       if not taskGetInfo.is_running():
         taskGetInfo.start(guild)
       if not taskUpdatePhone.is_running():
