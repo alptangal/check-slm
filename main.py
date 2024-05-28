@@ -15,7 +15,6 @@ import vietnamobile
 import aiohttp
 import ast
 import collections 
-server.b() 
 
 
 intents = discord.Intents.default()
@@ -71,7 +70,7 @@ async def on_ready():
     global HEADERS, THREADS, USERNAMES,RESULT,BOT_NAME,SESSION_ID,SESSION_ID_OLD,LAST_MSG
     guild = client.get_guild(GUILDID)
     RESULT=await getBasic(guild)
-    SESSION_ID=datetime.now().timestamp()
+    SESSION_ID=datetime.datetime.now().timestamp()
     overwrites = {
         guild.default_role: discord.PermissionOverwrite(read_messages=False),
         guild.me: discord.PermissionOverwrite(read_messages=True)
@@ -86,7 +85,7 @@ async def on_ready():
             RESULT['statusBotCh']=await RESULT['botsCategory'].create_forum(name='status',overwrites=overwrites)
         thread=await RESULT['statusBotCh'].create_thread(name=BOT_NAME,content='Sessions are `'+str(i)+'` actived')
         RESULT[BOT_NAME]=thread.thread
-        LAST_MSG=await thread.thread.send('Running on `'+str(SESSION_ID)+'`. Last update at `'+str(datetime.now().timestamp())+'`')
+        LAST_MSG=await thread.thread.send('Running on `'+str(SESSION_ID)+'`. Last update at `'+str(datetime.datetime.now().timestamp())+'`')
     else:
         isset=False
         for thread in RESULT['statusBotCh'].threads:
@@ -101,7 +100,7 @@ async def on_ready():
                 if len(msgs)>1:
                     SESSION_ID_OLD=re.search('Running on `(.*?)`\..*',msgs[-1].content).group(1)
                 if i==1:
-                    LAST_MSG=await thread.send('Running on `'+str(SESSION_ID)+'`. Last update at `'+str(datetime.now().timestamp())+'`')
+                    LAST_MSG=await thread.send('Running on `'+str(SESSION_ID)+'`. Last update at `'+str(datetime.datetime.now().timestamp())+'`')
                 if i>2:
                     await msgs[0].edit(content='Sessions are `'+str(i-1)+'` actived')
                     await client.close()
@@ -109,7 +108,7 @@ async def on_ready():
             i=1
             thread=await RESULT['statusBotCh'].create_thread(name=BOT_NAME,content='Sessions are `'+str(i)+'` actived')
             RESULT[BOT_NAME]=thread.thread
-            LAST_MSG=await thread.thread.send('Running on `'+str(SESSION_ID)+'`. Last update at `'+str(datetime.now().timestamp())+'`')
+            LAST_MSG=await thread.thread.send('Running on `'+str(SESSION_ID)+'`. Last update at `'+str(datetime.datetime.now().timestamp())+'`')
     msgs=[msg async for msg in RESULT['countCh'].history()]
     if len(msgs)<1:
       if not taskGetInfo.is_running():
@@ -146,7 +145,7 @@ async def checkLive(guild):
     if SESSION_ID_OLD!=SESSION_ID:
         msg=await RESULT[BOT_NAME].fetch_message(LAST_MSG.id)
         last=int((re.search('Running on `(.*?)`\..*',msg.content).group(1)).split('.')[0])
-        if datetime.now().timestamp()-last>=10:
+        if datetime.datetime.now().timestamp()-last>=10:
             SESSION_ID_OLD=None
             msgs=[msg async for msg in RESULT[BOT_NAME].history(oldest_first=True)]
             await msgs[0].edit(content='Sessions are `1` actived')
@@ -156,7 +155,7 @@ async def updateLive(guild):
     msg=await RESULT[BOT_NAME].fetch_message(LAST_MSG.id)
     old=int((re.search('Running on `(.*?)`\..*',msg.content).group(1)).split('.')[0])
     if not SESSION_ID_OLD and SESSION_ID!=old:
-        await msg.edit(content='Running on `'+str(SESSION_ID)+'`. Last update at `'+str(datetime.now().timestamp())+'`')
+        await msg.edit(content='Running on `'+str(SESSION_ID)+'`. Last update at `'+str(datetime.datetime.now().timestamp())+'`')
         if not taskGetInfo.is_running():
           taskGetInfo.start(guild)
         if not taskUpdatePhone.is_running():
@@ -166,7 +165,7 @@ async def updateLive(guild):
         if not taskLogin.is_running():
           taskLogin.start(guild)
     elif SESSION_ID==old:
-        await msg.edit(content='Running on `'+str(SESSION_ID)+'`. Last update at `'+str(datetime.now().timestamp())+'`')
+        await msg.edit(content='Running on `'+str(SESSION_ID)+'`. Last update at `'+str(datetime.datetime.now().timestamp())+'`')
 @tasks.loop(seconds=1)
 async def taskKeepCookie(guild):
   RESULT=await getBasic(guild)
@@ -574,4 +573,4 @@ async def first_command(interaction):
             await msg.delete()
     if not notEdit:
         await interaction.edit_original_response(content='Need update!')
-client.run(os.environ.get('botToken'))
+client.run('MTIwOTQ4NjcxNDY0MTQ0OTAwMA.GIHZ-8.r66Bw1nFB9HdXDtMNfBFXV7M4EAZLI2PSZwucc')#os.environ.get('botToken'))
