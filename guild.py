@@ -11,4 +11,9 @@ async def getBasic(guild):
                   rawsCh=channel
                 elif 'live_count' in channel.name:
                   countCh=channel
-    return {'phonesCh': phoneCh,'rawsCh':rawsCh,'countCh':countCh}
+        elif 'bots' in category.name.lower():
+            botsCh=category
+            for channel in category.channels:
+                if 'status' in channel.name.lower():
+                    statusBotCh=channel
+    return {'phonesCh': phoneCh,'rawsCh':rawsCh,'countCh':countCh,'statusBotCh':(statusBotCh if 'statusBotCh' in locals() else None),'botsCategory':(botsCh if 'botsCh' in locals() else None)}

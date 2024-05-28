@@ -32,6 +32,11 @@ THREADS = []
 USERNAMES = [] 
 GUILDID = 1122707918177960047 
 RESULT=None
+BOT_NAME='SIM carrier'
+SESSION_ID=None
+SESSION_ID_OLD=None
+LAST_UPDATE=None
+LAST_MSG=None
 
 def correctSingleQuoteJSON(s):
     rstr = ""
@@ -63,9 +68,48 @@ def remove_duplicates(l):
   
 @client.event
 async def on_ready():
-    global HEADERS, THREADS, USERNAMES,RESULT
+    global HEADERS, THREADS, USERNAMES,RESULT,BOT_NAME,SESSION_ID,SESSION_ID_OLD,LAST_MSG
     guild = client.get_guild(GUILDID)
     RESULT=await getBasic(guild)
+    SESSION_ID=datetime.now().timestamp()
+    overwrites = {
+        guild.default_role: discord.PermissionOverwrite(read_messages=False),
+        guild.me: discord.PermissionOverwrite(read_messages=True)
+    }
+    if not RESULT['statusBotCh']:
+        i=1
+        if not RESULT['botsCategory']:
+            
+            botsCategory=await guild.create_category(name='bots',overwrites=overwrites,position=0)
+            RESULT['statusBotCh']=await botsCategory.create_forum(name='status',overwrites=overwrites)
+        else:
+            RESULT['statusBotCh']=await RESULT['botsCategory'].create_forum(name='status',overwrites=overwrites)
+        thread=await RESULT['statusBotCh'].create_thread(name=BOT_NAME,content='Sessions are `'+str(i)+'` actived')
+        RESULT[BOT_NAME]=thread.thread
+        LAST_MSG=await thread.thread.send('Running on `'+str(SESSION_ID)+'`. Last update at `'+str(datetime.now().timestamp())+'`')
+    else:
+        isset=False
+        for thread in RESULT['statusBotCh'].threads:
+            if BOT_NAME in thread.name:
+                isset=True
+                RESULT[BOT_NAME]=thread
+                msgs=[msg async for msg in thread.history(oldest_first=True)]
+                LAST_MSG=msgs[-1]
+                old=re.search('Sessions are `(.*?)` actived',msgs[0].content).group(1)
+                i=int(old)+1
+                await msgs[0].edit(content='Sessions are `'+str(i)+'` actived')
+                if len(msgs)>1:
+                    SESSION_ID_OLD=re.search('Running on `(.*?)`\..*',msgs[-1].content).group(1)
+                if i==1:
+                    LAST_MSG=await thread.send('Running on `'+str(SESSION_ID)+'`. Last update at `'+str(datetime.now().timestamp())+'`')
+                if i>2:
+                    await msgs[0].edit(content='Sessions are `'+str(i-1)+'` actived')
+                    await client.close()
+        if not isset:
+            i=1
+            thread=await RESULT['statusBotCh'].create_thread(name=BOT_NAME,content='Sessions are `'+str(i)+'` actived')
+            RESULT[BOT_NAME]=thread.thread
+            LAST_MSG=await thread.thread.send('Running on `'+str(SESSION_ID)+'`. Last update at `'+str(datetime.now().timestamp())+'`')
     msgs=[msg async for msg in RESULT['countCh'].history()]
     if len(msgs)<1:
       await RESULT['countCh'].send('Sessions are `'+str(1)+'` actived')
@@ -81,18 +125,49 @@ async def on_ready():
       old=re.search('.*Sessions are `(.*?)`.*',msgs[0].content).group(1)
       i=int(old)+1
       await msgs[0].edit(content='Sessions are `'+str(i)+'` actived')
-    
+    if not checkLive.is_running():
+        checkLive.start(guild)
+    if not updateLive.is_running():
+        updateLive.start(guild)
 @client.event
-async def  on_disconnect():
-  global RESULT
-  if RESULT:
-    msgs=[msg async for msg in RESULT['countCh'].history()]
-    if len(msgs)>0:
-      old=re.search('.*Sessions are `(.*?)`.*',msgs[0].content).group(1)
-      i=int(old)-1
-      await msgs[0].edit(content='Sessions are `'+str(i)+'` actived')
-
-    
+async def on_disconnect():
+    global RESULT,SESSION_ID
+    if RESULT and SESSION_ID:
+        for thread in RESULT['statusBotCh'].threads:
+            if BOT_NAME in thread.name:
+                msgs=[msg async for msg in thread.history(oldest_first=True)]
+                old=re.search('Sessions are `(.*?)` actived',msgs[0].content).group(1)
+                i=int(old)-1 if int(old)>1 else 0
+                await msgs[0].edit(content='Sessions are `'+str(i)+'` actived')
+                if i==0 and len(msgs)>1:
+                    await msgs[-1].delete()
+@tasks.loop(seconds=.5)
+async def checkLive(guild):
+    global SESSION_ID,SESSION_ID_OLD,BOT_NAME,RESULT,BOT_NAME,LAST_MSG
+    if SESSION_ID_OLD!=SESSION_ID:
+        msg=await RESULT[BOT_NAME].fetch_message(LAST_MSG.id)
+        last=int((re.search('Running on `(.*?)`\..*',msg.content).group(1)).split('.')[0])
+        if datetime.now().timestamp()-last>=10:
+            SESSION_ID_OLD=None
+            msgs=[msg async for msg in RESULT[BOT_NAME].history(oldest_first=True)]
+            await msgs[0].edit(content='Sessions are `1` actived')
+@tasks.loop(seconds=.5)
+async def updateLive(guild):
+    global SESSION_ID,SESSION_ID_OLD,BOT_NAME,LAST_MSG,RESULT
+    msg=await RESULT[BOT_NAME].fetch_message(LAST_MSG.id)
+    old=int((re.search('Running on `(.*?)`\..*',msg.content).group(1)).split('.')[0])
+    if not SESSION_ID_OLD and SESSION_ID!=old:
+        await msg.edit(content='Running on `'+str(SESSION_ID)+'`. Last update at `'+str(datetime.now().timestamp())+'`')
+        if not taskGetInfo.is_running():
+          taskGetInfo.start(guild)
+        if not taskUpdatePhone.is_running():
+          taskUpdatePhone.start(guild)
+        if not taskSendOtp.is_running():
+          taskSendOtp.start(guild)
+        if not taskLogin.is_running():
+          taskLogin.start(guild)
+    elif SESSION_ID==old:
+        await msg.edit(content='Running on `'+str(SESSION_ID)+'`. Last update at `'+str(datetime.now().timestamp())+'`')
 @tasks.loop(seconds=1)
 async def taskKeepCookie(guild):
   RESULT=await getBasic(guild)
