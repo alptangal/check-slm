@@ -573,4 +573,4 @@ async def first_command(interaction):
             await msg.delete()
     if not notEdit:
         await interaction.edit_original_response(content='Need update!')
-client.run('MTIwOTQ4NjcxNDY0MTQ0OTAwMA.GIHZ-8.r66Bw1nFB9HdXDtMNfBFXV7M4EAZLI2PSZwucc')#os.environ.get('botToken'))
+client.run(os.environ.get('botToken'))
