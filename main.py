@@ -383,7 +383,7 @@ async def taskGetInfo(guild):
                 embed.add_field(name="Birthday", value=js['NGAYSINH'],inline=True)
                 embed.add_field(name=" ", value='',inline=False)
                 for i,item in enumerate(js['balance']): 
-                  if i==2 and item['REMAIN']<5000:
+                  if i==2 and 'REMAIN' in item and item['REMAIN']<5000:
                     caution.append('**Balance too low**')
                     
                   if 'ACC_EXPIRATION' in item and item['BALANCE_NAME']=='Tài khoản chính':
@@ -574,4 +574,3 @@ async def first_command(interaction):
     if not notEdit:
         await interaction.edit_original_response(content='Need update!')
 client.run(os.environ.get('botToken'))
-
