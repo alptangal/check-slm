@@ -171,7 +171,7 @@ async def taskUpdatePhone(guild):
           isset=True
       if not isset:
         tags=[]
-        for tag in RESULT['phonesCh']:
+        for tag in RESULT['phonesCh'].available_tags:
           if 'loading' in tag.name.lower():
             tags.append(tag)
         phone=msg.content.strip()
@@ -231,7 +231,7 @@ async def taskLogin(guild):
                   else: 
                     await msg.edit(content=rs)
                 tags=[]
-                for tag in RESULT['phonesCh']:
+                for tag in RESULT['phonesCh'].available_tags:
                   if 'loaded' in tag.name.lower():
                     tags.append(tag)
                 await thread.add_tags(tags)
@@ -255,7 +255,7 @@ async def taskLogin(guild):
                 else: 
                   await msg.edit(content=rs)
               tags=[]
-              for tag in RESULT['phonesCh']:
+              for tag in RESULT['phonesCh'].available_tags:
                 if 'loaded' in tag.name.lower():
                   tags.append(tag)
               await thread.add_tags(tags)
@@ -279,7 +279,7 @@ async def taskLogin(guild):
                     else: 
                       await msg.edit(content=rs['headers'])
                   tags=[]
-                  for tag in RESULT['phonesCh']:
+                  for tag in RESULT['phonesCh'].available_tags:
                     if 'loaded' in tag.name.lower():
                       tags.append(tag)
                   await thread.add_tags(tags)
@@ -310,7 +310,13 @@ async def taskGetInfo(guild):
                 rs=await getInfo(headers)
               except:
                 rs=False
-              if rs: 
+              if rs:
+                if 'loaded' not in str(thread.applied_tags).lower():
+                  tags=[]
+                  for tag in RESULT['phonesCh'].available_tags:
+                    if 'loaded' in tag.name.lower():
+                      tags.append(tag)
+                  await thread.add_tags(tags)
                 js=rs['data']
                 caution=[]
                 embed = discord.Embed(title=js['phone_number']+'- '+js['actStatusName'], description=js['productCode']+'/ '+js['serviceType'],colour=discord.Colour.red()) #,color=Hex code
@@ -375,6 +381,12 @@ async def taskGetInfo(guild):
               #try:
               rs=await vnpt.getInfo(json.loads(msgs[0].content.replace("'",'"')))
               if rs:
+                if 'loaded' not in str(thread.applied_tags).lower():
+                  tags=[]
+                  for tag in RESULT['phonesCh'].available_tags:
+                    if 'loaded' in tag.name.lower():
+                      tags.append(tag)
+                  await thread.add_tags(tags)
                 js=rs['data']
                 caution=[]
                 a=False
@@ -448,6 +460,12 @@ async def taskGetInfo(guild):
                   msg=await thread.send('re-active thread')
                   await msg.delete()
             if rs:
+              if 'loaded' not in str(thread.applied_tags).lower():
+                  tags=[]
+                  for tag in RESULT['phonesCh'].available_tags:
+                    if 'loaded' in tag.name.lower():
+                      tags.append(tag)
+                  await thread.add_tags(tags)
               js=rs
               caution=[]
               embed = discord.Embed(title='0'+js['MSISDN'][2:], description=js['CALL_PLAN']+'/ '+('Trả sau' if js['POSTPAID_FLAG']=="Y" else 'Trả trước'),colour=discord.Colour.orange()) #,color=Hex code
