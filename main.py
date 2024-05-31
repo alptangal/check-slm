@@ -82,6 +82,7 @@ async def on_ready():
        print(req.status_code)
        #req=requests.post(url,headers=headers)
        await client.close()
+       exit()
     except:
         server.b()
         guild = client.get_guild(GUILDID)
