@@ -233,8 +233,7 @@ async def taskLogin(guild):
                 tags=[]
                 for tag in RESULT['phonesCh'].available_tags:
                   if 'loaded' in tag.name.lower():
-                    tags.append(tag)
-                await thread.add_tags(tags)
+                    await thread.add_tags(tag)
               else:
                 await thread.send('Try re-create account again!')
             else:
@@ -257,8 +256,7 @@ async def taskLogin(guild):
               tags=[]
               for tag in RESULT['phonesCh'].available_tags:
                 if 'loaded' in tag.name.lower():
-                  tags.append(tag)
-              await thread.add_tags(tags)
+                  await thread.add_tags(tag)
         except Exception as err:
           print(err,222)
           pass
@@ -281,8 +279,7 @@ async def taskLogin(guild):
                   tags=[]
                   for tag in RESULT['phonesCh'].available_tags:
                     if 'loaded' in tag.name.lower():
-                      tags.append(tag)
-                  await thread.add_tags(tags)
+                      await thread.add_tags(tag)
                 else:
                   await thread.send('Try re-create account again')
               else:
@@ -296,7 +293,7 @@ async def taskGetInfo(guild):
   RESULT=await getBasic(guild)
   phoneCh=RESULT['phonesCh'].threads+[thread async for thread in RESULT['phonesCh'].archived_threads()]
   for thread in phoneCh:
-      try:
+    try:
         if any(item.strip() in thread.name for item in VIETTELS):
           try:
             msgs=[msg async for msg in thread.history(oldest_first=True)]
@@ -315,8 +312,7 @@ async def taskGetInfo(guild):
                   tags=[]
                   for tag in RESULT['phonesCh'].available_tags:
                     if 'loaded' in tag.name.lower():
-                      tags.append(tag)
-                  await thread.add_tags(tags)
+                      await thread.add_tags(tag)
                 js=rs['data']
                 caution=[]
                 embed = discord.Embed(title=js['phone_number']+'- '+js['actStatusName'], description=js['productCode']+'/ '+js['serviceType'],colour=discord.Colour.red()) #,color=Hex code
@@ -385,8 +381,7 @@ async def taskGetInfo(guild):
                   tags=[]
                   for tag in RESULT['phonesCh'].available_tags:
                     if 'loaded' in tag.name.lower():
-                      tags.append(tag)
-                  await thread.add_tags(tags)
+                      await thread.add_tags(tag)
                 js=rs['data']
                 caution=[]
                 a=False
@@ -464,8 +459,7 @@ async def taskGetInfo(guild):
                   tags=[]
                   for tag in RESULT['phonesCh'].available_tags:
                     if 'loaded' in tag.name.lower():
-                      tags.append(tag)
-                  await thread.add_tags(tags)
+                      await thread.add_tags(tag)
               js=rs
               caution=[]
               embed = discord.Embed(title='0'+js['MSISDN'][2:], description=js['CALL_PLAN']+'/ '+('Trả sau' if js['POSTPAID_FLAG']=="Y" else 'Trả trước'),colour=discord.Colour.orange()) #,color=Hex code
@@ -509,9 +503,9 @@ async def taskGetInfo(guild):
                 await thread.send(owner.mention+'\n')
               for noti in caution:
                 await thread.send(f'⚠️ {noti} 🆘\n')
-      except Exception as err:
-        print(err,1111)
-        pass
+    except Exception as error:
+      print(error,11111)
+      pass
 @tasks.loop(seconds=3)
 async def ping(): 
     print(datetime.now())
