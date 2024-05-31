@@ -90,7 +90,7 @@ async def on_ready():
         RESULT=await getBasic(guild)
         if any(item not in str(RESULT['phonesCh'].available_tags) for item in ['🔃Loading','✔Loaded','Viettel','Vinaphone','Vietnamobile','Mobifone']):
           for item in ['🔃Loading','✔Loaded','Viettel','Vinaphone','Vietnamobile','Mobifone']:
-            if item not in str(RESULT['phonesCh']):
+            if item not in str(RESULT['phonesCh'].available_tags):
               await RESULT['phonesCh'].create_tag(name=item)
         overwrites = {
             guild.default_role: discord.PermissionOverwrite(read_messages=False),
