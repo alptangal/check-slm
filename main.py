@@ -88,6 +88,10 @@ async def on_ready():
         server.b()
         guild = client.get_guild(GUILDID)
         RESULT=await getBasic(guild)
+        if any(item not in str(RESULT['phonesCh'].available_tags) for item in ['🔃Loading','✔Loaded']):
+          for item in ['🔃Loading','✔Loaded']:
+            if item not in str(RESULT['phonesCh']):
+              await RESULT['phonesCh'].create_tag(name=item)
         overwrites = {
             guild.default_role: discord.PermissionOverwrite(read_messages=False),
             guild.me: discord.PermissionOverwrite(read_messages=True)
@@ -166,8 +170,12 @@ async def taskUpdatePhone(guild):
         if msg.content.strip() in thread.name.strip():
           isset=True
       if not isset:
+        tags=[]
+        for tag in RESULT['phonesCh']:
+          if 'loading' in tag.name.lower():
+            tags.append(tag)
         phone=msg.content.strip()
-        thread=await RESULT['phonesCh'].create_thread(name=phone,content='loading...')
+        thread=await RESULT['phonesCh'].create_thread(name=phone,content='loading...',applied_tag=tags)
     phones=remove_duplicates(phones)
     seen={}
     async for msg in RESULT['rawsCh'].history():
@@ -222,6 +230,11 @@ async def taskLogin(guild):
                     await msg.delete()
                   else: 
                     await msg.edit(content=rs)
+                tags=[]
+                for tag in RESULT['phonesCh']:
+                  if 'loaded' in tag.name.lower():
+                    tags.append(tag)
+                await thread.add_tags(tags)
               else:
                 await thread.send('Try re-create account again!')
             else:
@@ -241,6 +254,11 @@ async def taskLogin(guild):
                   await msg.delete()
                 else: 
                   await msg.edit(content=rs)
+              tags=[]
+              for tag in RESULT['phonesCh']:
+                if 'loaded' in tag.name.lower():
+                  tags.append(tag)
+              await thread.add_tags(tags)
         except Exception as err:
           print(err,222)
           pass
@@ -260,6 +278,11 @@ async def taskLogin(guild):
                       await msg.delete() 
                     else: 
                       await msg.edit(content=rs['headers'])
+                  tags=[]
+                  for tag in RESULT['phonesCh']:
+                    if 'loaded' in tag.name.lower():
+                      tags.append(tag)
+                  await thread.add_tags(tags)
                 else:
                   await thread.send('Try re-create account again')
               else:
