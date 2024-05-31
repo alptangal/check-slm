@@ -90,7 +90,7 @@ async def on_ready():
         RESULT=await getBasic(guild)
         if any(item not in str(RESULT['phonesCh'].available_tags) for item in ['🔃Loading','✔Loaded','Viettel','Vinaphone','Vietnamobile','Mobifone']):
           for item in ['🔃Loading','✔Loaded','Viettel','Vinaphone','Vietnamobile','Mobifone']:
-            if item not in str(RESULT['phonesCh'].available_tags):
+            if item not in str(RESULT['phonesCh']):
               await RESULT['phonesCh'].create_tag(name=item)
         overwrites = {
             guild.default_role: discord.PermissionOverwrite(read_messages=False),
@@ -230,10 +230,6 @@ async def taskLogin(guild):
                     await msg.delete()
                   else: 
                     await msg.edit(content=rs)
-                tags=[]
-                for tag in RESULT['phonesCh'].available_tags:
-                  if any(item in tag.name.lower() for item in ['loaded','viettel']):
-                    await thread.add_tags(tag)
               else:
                 await thread.send('Try re-create account again!')
             else:
@@ -253,10 +249,6 @@ async def taskLogin(guild):
                   await msg.delete()
                 else: 
                   await msg.edit(content=rs)
-              tags=[]
-              for tag in RESULT['phonesCh'].available_tags:
-                if 'loaded' in tag.name.lower():
-                  await thread.add_tags(tag)
         except Exception as err:
           print(err,222)
           pass
@@ -276,10 +268,6 @@ async def taskLogin(guild):
                       await msg.delete() 
                     else: 
                       await msg.edit(content=rs['headers'])
-                  tags=[]
-                  for tag in RESULT['phonesCh'].available_tags:
-                    if any(item in tag.name.lower() for item in ['loaded','vinaphone']):
-                      await thread.add_tags(tag)
                 else:
                   await thread.send('Try re-create account again')
               else:
@@ -311,7 +299,7 @@ async def taskGetInfo(guild):
                 if 'loaded' not in str(thread.applied_tags).lower():
                   tags=[]
                   for tag in RESULT['phonesCh'].available_tags:
-                    if any(item in tag.name.lower() for item in ['loaded','vietnamobile']):
+                    if any(item in tag.name.lower() for item in ['loaded','viettel']):
                       await thread.add_tags(tag)
                 js=rs['data']
                 caution=[]
@@ -380,7 +368,7 @@ async def taskGetInfo(guild):
                 if 'loaded' not in str(thread.applied_tags).lower():
                   tags=[]
                   for tag in RESULT['phonesCh'].available_tags:
-                    if 'loaded' in tag.name.lower():
+                    if any(item in tag.name.lower() for item in ['loaded','vinaphone']):
                       await thread.add_tags(tag)
                 js=rs['data']
                 caution=[]
@@ -458,7 +446,7 @@ async def taskGetInfo(guild):
               if 'loaded' not in str(thread.applied_tags).lower():
                   tags=[]
                   for tag in RESULT['phonesCh'].available_tags:
-                    if 'loaded' in tag.name.lower():
+                    if any(item in tag.name.lower() for item in ['loaded','vietnamobile']):
                       await thread.add_tags(tag)
               js=rs
               caution=[]
