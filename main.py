@@ -88,8 +88,8 @@ async def on_ready():
         server.b()
         guild = client.get_guild(GUILDID)
         RESULT=await getBasic(guild)
-        if any(item not in str(RESULT['phonesCh'].available_tags) for item in ['🔃Loading','✔Loaded']):
-          for item in ['🔃Loading','✔Loaded']:
+        if any(item not in str(RESULT['phonesCh'].available_tags) for item in ['🔃Loading','✔Loaded','Viettel','Vinaphone','Vietnamobile','Mobifone']):
+          for item in ['🔃Loading','✔Loaded','Viettel','Vinaphone','Vietnamobile','Mobifone']:
             if item not in str(RESULT['phonesCh']):
               await RESULT['phonesCh'].create_tag(name=item)
         overwrites = {
@@ -232,7 +232,7 @@ async def taskLogin(guild):
                     await msg.edit(content=rs)
                 tags=[]
                 for tag in RESULT['phonesCh'].available_tags:
-                  if 'loaded' in tag.name.lower():
+                  if any(item in tag.name.lower() for item in ['loaded','viettel']):
                     await thread.add_tags(tag)
               else:
                 await thread.send('Try re-create account again!')
@@ -278,7 +278,7 @@ async def taskLogin(guild):
                       await msg.edit(content=rs['headers'])
                   tags=[]
                   for tag in RESULT['phonesCh'].available_tags:
-                    if 'loaded' in tag.name.lower():
+                    if any(item in tag.name.lower() for item in ['loaded','vinaphone']):
                       await thread.add_tags(tag)
                 else:
                   await thread.send('Try re-create account again')
@@ -311,7 +311,7 @@ async def taskGetInfo(guild):
                 if 'loaded' not in str(thread.applied_tags).lower():
                   tags=[]
                   for tag in RESULT['phonesCh'].available_tags:
-                    if 'loaded' in tag.name.lower():
+                    if any(item in tag.name.lower() for item in ['loaded','vietnamobile']):
                       await thread.add_tags(tag)
                 js=rs['data']
                 caution=[]
@@ -341,7 +341,7 @@ async def taskGetInfo(guild):
                   for item1 in cate['list']:
                     if 'user_state' in item1 and int(item1['used_state'])>0:
                       if issetPromotion==False:
-                        embed.add_field(name="Danh sách gói cước đang sử dụng", value='',inline=True)
+                        embed.add_field(name="Danh sách gói cước đang sử dụng", value='',inline=False)
                         issetPromotion=True
                       embed.add_field(name="Gói cước đang áp dụng" if int(item1['used_state'])==2 else "Gói cước chờ gia hạn", value='**'+(item1['code'] if 'code' in item1 else item1['pack_code'])+'** giá **'+item1['price']+'** - `'+item1['cycle']+'`',inline=True)
                 embed.set_footer(text='Updated at '+str(datetime.datetime.now()+timedelta(hours=7)).split('.')[0]+' ** Powered By VIETTEL')
