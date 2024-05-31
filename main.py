@@ -71,7 +71,6 @@ async def on_ready():
     try: 
        req=requests.get('http://localhost:8888')
        print(req.status_code)
-       #url='https://check-slm-jcgluv3idsiaeyruf5fd2z.streamlit.app/api/v2/app/resume'
        url='https://check-slm-jcgluv3idsiaeyruf5fd2z.streamlit.app/api/v2/app/status'
        headers={
          'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0',
@@ -79,8 +78,10 @@ async def on_ready():
          'x-csrf-token':'ZXg3M2dDV1VxbnI4ZTBPbHlucmFIRmllRHVkZUREWWghDlMCXhlkIQc3P2EqBQ0bIF89GwAIOCIHDBwtIxc2JA==  '
        }
        req=requests.get(url,headers=headers)
-       print(req.status_code)
-       #req=requests.post(url,headers=headers)
+       js=req.json()
+       if js['status']!=5:
+        url='https://check-slm-jcgluv3idsiaeyruf5fd2z.streamlit.app/api/v2/app/resume'
+        req=requests.post(url,headers=headers)
        await client.close()
        exit()
     except:
