@@ -311,6 +311,14 @@ async def taskGetInfo(guild):
                 embed.add_field(name=" ", value='',inline=False)
                 embed.add_field(name="Points", value=js['viettelPlusInfo']['point_can_used'],inline=True)
                 embed.add_field(name="Point Expire", value=js['viettelPlusInfo']['point_expired'],inline=True)
+                issetPromotion=False
+                for cate in js['list-promotion']:
+                  for item1 in cate['list']:
+                    if 'user_state' in item1 and int(item1['used_state'])>0:
+                      if issetPromotion==False:
+                        embed.add_field(name="Danh sách gói cước đang sử dụng", value='',inline=True)
+                        issetPromotion=True
+                      embed.add_field(name="Gói cước đang áp dụng" if int(item1['used_state'])==2 else "Gói cước chờ gia hạn", value='**'+(item1['code'] if 'code' in item1 else item1['pack_code'])+'** giá **'+item1['price']+'**',inline=True)
                 embed.set_footer(text='Updated at '+str(datetime.datetime.now()+timedelta(hours=7)).split('.')[0]+' ** Powered By VIETTEL')
                 if len(msgs)==1:
                   await thread.send(embed=embed) 

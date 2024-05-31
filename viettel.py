@@ -61,7 +61,7 @@ async def loginByChecksum(input):
             headers['cookie'] += cookie.key +'='+cookie.value+';'
             if 'X-XSRF-TOKEN' in cookie.key:
               headers['X-XSRF-TOKEN']=cookie.value
-          return {'headers':headers,'phone':input["phone"]}
+          return {'headers':headers,'phone':input["phone"],'data':js['data']['data']}
   print(f'{input["phone"]} can\'t login')
   return False
 async def login(phone,otp):
@@ -109,6 +109,15 @@ async def getInfo(headers):
             if res.status<400:
               js=await res.json() 
               data=data|js['data']
+              url='https://apigami.viettel.vn/mvt-api/myviettel.php/getPromotionDataMyvtV3'
+              data1={
+                'is_app':'1',
+                'list_all':'1',
+                'token':headers['data']['token'],
+                'type':'data_all'
+              }
+              req=requests.post(url,data=data1,headers=headers['headers'])
+              data['list-promotion']=req.json()['data']
               '''print(headers) 
               async with session.post(url,headers={'cookie':ck}) as res:
                 if res.status<400:
