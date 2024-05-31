@@ -73,7 +73,8 @@ async def on_ready():
        print(req.status_code)
        url='https://check-slm-jcgluv3idsiaeyruf5fd2z.streamlit.app/api/v2/app/resume'
        headers={
-         'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0'
+         'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0',
+         'cookie':'streamlit_session=MTcxNzEyMzA2MHx3LXhhN2FhMGQzSjRReXUzQXJhdkhqVURzbWdfLTZCOGk5LTZjVF9weklLTmxVcTF4V2pDLWZzMmVaV0w1UTR3b2dKMDFwdFVEdFg4T08xbTVLckZnV19XTC1JRjlEa0QzVXk2X3Jiay1xZVRvY2REbWFpanpoM2RvcnlPOUc1S0M1bVp6VmRaS2ZxSEVRNzk4eVlRVHotVHNwSnJOdmRBWmt6enhDLUtlZUtNYm9zQXJpS0k5U3dtN1E9PXzCAzBULoyXzm5dAIYekSKRJY9KdvDeJTRiEdNFZGXxFA==; _dd_s=logs=1&id=405b2ade-740f-4ef1-be42-0be559486dbd&created=1717123061799&expire=1717124307317; _streamlit_csrf=MTcxNzEyMzA2MnxJbEpJV210TlZHeGhUVE5TTWxkVk1WcFVlbFpEWkRGcmVGUXpjRWxVYkVaSVVUTnNORk5IWkZSaU1IYzlJZz09fIYo7KAuiXcVuQXmqqwRBFszE2lsbhCGAkoExmdv-14s'
        }
        req=requests.post(url,headers=headers)
        print(1111222223333,req.status_code)
