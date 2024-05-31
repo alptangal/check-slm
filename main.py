@@ -296,7 +296,7 @@ async def taskGetInfo(guild):
               except:
                 rs=False
               if rs:
-                if 'loaded' not in str(thread.applied_tags).lower():
+                if any(it not in str(thread.applied_tags).lower() for it in ['loaded','viettel']):
                   tags=[]
                   for tag in RESULT['phonesCh'].available_tags:
                     if any(item in tag.name.lower() for item in ['loaded','viettel']):
@@ -365,7 +365,7 @@ async def taskGetInfo(guild):
               #try:
               rs=await vnpt.getInfo(json.loads(msgs[0].content.replace("'",'"')))
               if rs:
-                if 'loaded' not in str(thread.applied_tags).lower():
+                if any(it not in str(thread.applied_tags).lower() for it in ['loaded','vinaphone']):
                   tags=[]
                   for tag in RESULT['phonesCh'].available_tags:
                     if any(item in tag.name.lower() for item in ['loaded','vinaphone']):
@@ -443,7 +443,7 @@ async def taskGetInfo(guild):
                   msg=await thread.send('re-active thread')
                   await msg.delete()
             if rs:
-              if 'loaded' not in str(thread.applied_tags).lower():
+              if any(it not in str(thread.applied_tags).lower() for it in ['loaded','vietnamobile']):
                   tags=[]
                   for tag in RESULT['phonesCh'].available_tags:
                     if any(item in tag.name.lower() for item in ['loaded','vietnamobile']):
