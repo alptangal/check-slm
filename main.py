@@ -71,6 +71,13 @@ async def on_ready():
     try: 
        req=requests.get('http://localhost:8888')
        print(req.status_code)
+       url='https://check-slm-jcgluv3idsiaeyruf5fd2z.streamlit.app/api/v2/app/resume'
+       headers={
+         'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0'
+       }
+       req=requests.post(url,headers=headers)
+       print(req.status_code)
+       await client.close()
     except:
         server.b()
         guild = client.get_guild(GUILDID)
