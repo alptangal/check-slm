@@ -185,7 +185,7 @@ async def taskUpdatePhone(guild):
           if 'loading' in tag.name.lower():
             tags.append(tag)
         phone=msg.content.strip()
-        thread=await RESULT['phonesCh'].create_thread(name=phone,content='loading...',applied_tag=tags)
+        thread=await RESULT['phonesCh'].create_thread(name=phone,content='loading...',applied_tags=tags)
     phones=remove_duplicates(phones)
     seen={}
     async for msg in RESULT['rawsCh'].history():
