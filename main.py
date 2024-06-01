@@ -311,6 +311,8 @@ async def taskGetInfo(guild):
                   for tag in RESULT['phonesCh'].available_tags:
                     if any(item in tag.name.lower() for item in ['loaded','viettel']):
                       await thread.add_tags(tag)
+                    elif 'loading' in tag.name.lower():
+                      await thread.remove_tags(tag)
                 js=rs['data']
                 caution=[]
                 embed = discord.Embed(title=js['phone_number']+'- '+js['actStatusName'], description=js['productCode']+'/ '+js['serviceType'],colour=discord.Colour.red()) #,color=Hex code
@@ -380,6 +382,8 @@ async def taskGetInfo(guild):
                   for tag in RESULT['phonesCh'].available_tags:
                     if any(item in tag.name.lower() for item in ['loaded','vinaphone']):
                       await thread.add_tags(tag)
+                    elif 'loading' in tag.name.lower():
+                      await thread.remove_tags(tag)
                 js=rs['data']
                 caution=[]
                 a=False
@@ -459,6 +463,8 @@ async def taskGetInfo(guild):
                   for tag in RESULT['phonesCh'].available_tags:
                     if any(item in tag.name.lower() for item in ['loaded','vietnamobile']):
                       await thread.add_tags(tag)
+                    elif 'loading' in tag.name.lower():
+                      await thread.remove_tags(tag)
               js=rs
               caution=[]
               embed = discord.Embed(title='0'+js['MSISDN'][2:], description=js['CALL_PLAN']+'/ '+('Trả sau' if js['POSTPAID_FLAG']=="Y" else 'Trả trước'),colour=discord.Colour.orange()) #,color=Hex code
