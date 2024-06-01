@@ -271,7 +271,7 @@ async def taskLogin(guild):
             if headers['transId']!=None:
               rs=await vietnamobile.register(headers,otp)
               if rs['result']==True:
-                headers=await vietnamobile.login(rs)
+                headers=await vietnamobile.login(rs['headers'])
                 if headers:
                   for i,msg in enumerate(msgs):
                     if i!=0 and 'headers' not in msgs[0].content:
