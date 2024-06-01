@@ -327,7 +327,7 @@ async def taskGetInfo(guild):
                 issetPromotion=False
                 for cate in js['list-promotion']:
                   for item1 in cate['list']:
-                    if 'user_state' in item1 and int(item1['used_state'])>0:
+                    if 'used_state' in item1 and int(item1['used_state'])>0:
                       if issetPromotion==False:
                         embed.add_field(name="Danh sách gói cước đang sử dụng", value='',inline=False)
                         issetPromotion=True
