@@ -1,4 +1,5 @@
 import asyncio
+import websockets
 import os
 import re,json
 import discord
@@ -15,6 +16,7 @@ import vietnamobile
 import aiohttp
 import ast
 import collections 
+import websocketsServer,websocketsClient
 
 
 intents = discord.Intents.default()
@@ -69,23 +71,25 @@ def remove_duplicates(l):
 async def on_ready():
     global HEADERS, THREADS, USERNAMES,RESULT,BOT_NAME,SESSION_ID,SESSION_ID_OLD,LAST_MSG
     try: 
-       req=requests.get('http://localhost:8888')
-       print(req.status_code)
-       url='https://check-slm-jcgluv3idsiaeyruf5fd2z.streamlit.app/api/v2/app/status'
-       headers={
-         'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0',
-         'cookie':'streamlit_session=MTcxNzEyMzA2MHx3LXhhN2FhMGQzSjRReXUzQXJhdkhqVURzbWdfLTZCOGk5LTZjVF9weklLTmxVcTF4V2pDLWZzMmVaV0w1UTR3b2dKMDFwdFVEdFg4T08xbTVLckZnV19XTC1JRjlEa0QzVXk2X3Jiay1xZVRvY2REbWFpanpoM2RvcnlPOUc1S0M1bVp6VmRaS2ZxSEVRNzk4eVlRVHotVHNwSnJOdmRBWmt6enhDLUtlZUtNYm9zQXJpS0k5U3dtN1E9PXzCAzBULoyXzm5dAIYekSKRJY9KdvDeJTRiEdNFZGXxFA==; _dd_s=logs=1&id=405b2ade-740f-4ef1-be42-0be559486dbd&created=1717123061799&expire=1717124307317; _streamlit_csrf=MTcxNzEyMzA2MnxJbEpJV210TlZHeGhUVE5TTWxkVk1WcFVlbFpEWkRGcmVGUXpjRWxVYkVaSVVUTnNORk5IWkZSaU1IYzlJZz09fIYo7KAuiXcVuQXmqqwRBFszE2lsbhCGAkoExmdv-14s',
-         'x-csrf-token':'ZXg3M2dDV1VxbnI4ZTBPbHlucmFIRmllRHVkZUREWWghDlMCXhlkIQc3P2EqBQ0bIF89GwAIOCIHDBwtIxc2JA==  '
-       }
-       req=requests.get(url,headers=headers)
-       js=req.json()
-       if js['status']!=5:
+      req=requests.get('http://localhost:8888')
+      print(req.status_code)
+      url='https://check-slm-jcgluv3idsiaeyruf5fd2z.streamlit.app/api/v2/app/status'
+      headers={
+        'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0',
+        'cookie':'streamlit_session=MTcxNzEyMzA2MHx3LXhhN2FhMGQzSjRReXUzQXJhdkhqVURzbWdfLTZCOGk5LTZjVF9weklLTmxVcTF4V2pDLWZzMmVaV0w1UTR3b2dKMDFwdFVEdFg4T08xbTVLckZnV19XTC1JRjlEa0QzVXk2X3Jiay1xZVRvY2REbWFpanpoM2RvcnlPOUc1S0M1bVp6VmRaS2ZxSEVRNzk4eVlRVHotVHNwSnJOdmRBWmt6enhDLUtlZUtNYm9zQXJpS0k5U3dtN1E9PXzCAzBULoyXzm5dAIYekSKRJY9KdvDeJTRiEdNFZGXxFA==; _dd_s=logs=1&id=405b2ade-740f-4ef1-be42-0be559486dbd&created=1717123061799&expire=1717124307317; _streamlit_csrf=MTcxNzEyMzA2MnxJbEpJV210TlZHeGhUVE5TTWxkVk1WcFVlbFpEWkRGcmVGUXpjRWxVYkVaSVVUTnNORk5IWkZSaU1IYzlJZz09fIYo7KAuiXcVuQXmqqwRBFszE2lsbhCGAkoExmdv-14s',
+        'x-csrf-token':'ZXg3M2dDV1VxbnI4ZTBPbHlucmFIRmllRHVkZUREWWghDlMCXhlkIQc3P2EqBQ0bIF89GwAIOCIHDBwtIxc2JA==  '
+      }
+      req=requests.get(url,headers=headers)
+      js=req.json()
+      if js['status']!=5:
         url='https://check-slm-jcgluv3idsiaeyruf5fd2z.streamlit.app/api/v2/app/resume'
         req=requests.post(url,headers=headers)
-       await client.close()
-       exit()
+      
+      await client.close()
+      exit()
     except:
         server.b()
+        tet.start()
         guild = client.get_guild(GUILDID)
         RESULT=await getBasic(guild)
         if any(item not in str(RESULT['phonesCh'].available_tags) for item in ['🔃Loading','✔Loaded','Viettel','Vinaphone','Vietnamobile','Mobifone']):
@@ -104,6 +108,9 @@ async def on_ready():
           taskSendOtp.start(guild)
         if not taskLogin.is_running():
           taskLogin.start(guild)
+@tasks.loop(count=1,seconds=1)
+async def tet():
+  await websocketsServer.main()
 @client.event
 async def on_disconnect():
     global RESULT,SESSION_ID
@@ -331,7 +338,7 @@ async def taskGetInfo(guild):
                       if issetPromotion==False:
                         embed.add_field(name="Danh sách gói cước đang sử dụng", value='',inline=False)
                         issetPromotion=True
-                      embed.add_field(name="Gói cước đang áp dụng" if int(item1['used_state'])==2 else "Gói cước chờ gia hạn", value='**'+(item1['code'] if 'code' in item1 else item1['pack_code'])+'** giá **'+item1['price']+'** - `'+item1['cycle']+'`',inline=True)
+                      embed.add_field(name="Gói cước đang áp dụng" if int(item1['used_state'])==2 else "Gói cước chờ gia hạn", value='**'+(item1['code'] if 'code' in item1 else item1['pack_code'])+'** giá **'+int(item1['price'])+'** - `'+item1['cycle']+'`',inline=True)
                 embed.set_footer(text='Updated at '+str(datetime.datetime.now()+timedelta(hours=7)).split('.')[0]+' ** Powered By VIETTEL')
                 if len(msgs)==1:
                   await thread.send(embed=embed) 

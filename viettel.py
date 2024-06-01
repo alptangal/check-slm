@@ -95,29 +95,38 @@ async def getInfo(headers):
         ck += cookie.key +'='+cookie.value+';'
       url='https://vietteltelecom.vn/api/get-user-pre-info'
       #url='https://vietteltelecom.vn/api/get-info-user'
-      req=requests.post(url,headers={'cookie':ck})
-      data=req.json()
-      url='https://vietteltelecom.vn/api/auth/user'
-      req=requests.get(url,headers={'cookie':ck})
-      js=req.json()
-      if len(js)>0:
-        data=data|js 
-        url='https://vietteltelecom.vn/api/get-status-user'
-        req=requests.post(url,headers={'cookie':ck})
-        async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar()) as session:
-          async with session.post(url,headers={'cookie':ck}) as res:
-            if res.status<400:
-              js=await res.json() 
-              data=data|js['data']
-              url='https://apigami.viettel.vn/mvt-api/myviettel.php/getPromotionDataMyvtV3'
-              data1={
-                'is_app':'1',
-                'list_all':'1',
-                'token':headers['data']['token'],
-                'type':'data_all'
-              }
-              req=requests.post(url,data=data1,headers=headers['headers'])
-              data['list-promotion']=req.json()['data']
+
+      async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar()) as session:
+        async with session.post(url,headers={'cookie':ck}) as res:
+          if res.status<400:
+            js=await res.json()
+            data=js
+            url='https://vietteltelecom.vn/api/auth/user'
+            async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar()) as session:
+              async with session.get(url,headers={'cookie':ck}) as res:
+                if res.status<400:
+                  js=await res.json()
+                  if len(js)>0:
+                    data=data|js 
+                    url='https://vietteltelecom.vn/api/get-status-user'
+                    async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar()) as session:
+                      async with session.post(url,headers={'cookie':ck}) as res:
+                        if res.status<400:
+                          js=await res.json()
+                          data=data|js['data']
+                      url='https://apigami.viettel.vn/mvt-api/myviettel.php/getPromotionDataMyvtV3'
+                      data1={
+                        'is_app':'1',
+                        'list_all':'1',
+                        'token':headers['data']['token'],
+                        'type':'data_all'
+                      }
+                    async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar()) as session:
+                      async with session.post(url,data=data1,headers=headers['headers']) as res:
+                        if res.status<400:
+                          js=await res.json()
+                          if 'data' in js:
+                            data['list-promotion']=js['data']
               '''print(headers) 
               async with session.post(url,headers={'cookie':ck}) as res:
                 if res.status<400:
