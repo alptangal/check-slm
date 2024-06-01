@@ -537,4 +537,6 @@ async def first_command(interaction):
       f.write(st)
       f.close()
       await interaction.edit_original_response(content='Danh sách gói cước ưu đãi áp dụng cho thuê bao **'+interaction.channel.name+'**',attachments =[discord.File(fileName)])
+  else:
+    await interaction.edit_original_response(content='No data')
 client.run(os.environ.get('botToken'))
