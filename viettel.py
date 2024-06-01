@@ -151,3 +151,51 @@ async def getInfo(headers):
               return {'data':data,'headers':headers} 
   print(f'{headers["phone"]} can\'t get information')
   return False
+async def getPromotions(headers):
+  url='https://vietteltelecom.vn/thong-tin-tai-khoan'
+  async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar()) as session:
+    async with session.get(url,headers=headers['headers']) as res:
+      cookies = session.cookie_jar.filter_cookies('https://vietteltelecom.vn')
+      ck=''
+      cs=None
+      for key, cookie in cookies.items():
+        if 'X-XSRF-TOKEN' in cookie.key:
+          cs=cookie.value
+        ck += cookie.key +'='+cookie.value+';'
+        url='https://apigami.viettel.vn/mvt-api/myviettel.php/getPromotionDataMyvtV3'
+        data1={
+          'is_app':'1',
+          'list_all':'1',
+          'token':headers['data']['token'],
+          'type':'data_all'
+        }
+        async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar()) as session:
+          async with session.post(url,data=data1,headers=headers['headers']) as res:
+            if res.status<400:
+              js=await res.json()
+              if 'data' in js:
+                data=js['data']
+              '''print(headers) 
+              async with session.post(url,headers={'cookie':ck}) as res:
+                if res.status<400:
+                  print(f'{headers["phone"]} get info of success')
+                  js=await res.json()
+                  data=js['data'][0]
+                  url='https://vietteltelecom.vn/api/get-status-user'
+                  async with session.post(url,headers={'cookie':ck}) as res:
+                    if res.status<400:
+                      js=await res.json()
+                      data=data|js['data']
+                      url='https://vietteltelecom.vn/api/auth/user'
+                      async with session.get(url,headers={'cookie':ck}) as res:
+                        if res.status<400:
+                          js=await res.json()
+                          data=data|js
+                          url='https://vietteltelecom.vn/api/get-info-user'
+                          async with session.post(url,headers={'cookie':ck}) as res:
+                            if res.status<400:
+                              print(await res.json())'''
+              print(f'{headers["phone"]} get information success')
+              return {'data':data,'headers':headers} 
+  print(f'{headers["phone"]} can\'t get information')
+  return False

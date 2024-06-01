@@ -17,6 +17,7 @@ import aiohttp
 import ast
 import collections 
 import websocketsServer,websocketsClient
+from bs4 import BeautifulSoup as Soup
 
 
 intents = discord.Intents.default()
@@ -69,6 +70,8 @@ def remove_duplicates(l):
   
 @client.event
 async def on_ready():
+    guild = client.get_guild(GUILDID)
+    await tree.sync(guild=guild)
     global HEADERS, THREADS, USERNAMES,RESULT,BOT_NAME,SESSION_ID,SESSION_ID_OLD,LAST_MSG
     try: 
       req=requests.get('http://localhost:8888')
@@ -338,7 +341,7 @@ async def taskGetInfo(guild):
                       if issetPromotion==False:
                         embed.add_field(name="Danh sách gói cước đang sử dụng", value='',inline=False)
                         issetPromotion=True
-                      embed.add_field(name="Gói cước đang áp dụng" if int(item1['used_state'])==2 else "Gói cước chờ gia hạn", value='**'+(item1['code'] if 'code' in item1 else item1['pack_code'])+'** giá **'+str(item1['price'])+'** - `'+item1['cycle']+'`',inline=True)
+                      embed.add_field(name="🟢 Gói cước đang áp dụng" if int(item1['used_state'])==1 else "🟡 Gói cước chờ gia hạn", value='**'+(item1['code'] if 'code' in item1 else item1['pack_code'])+'** giá **'+str(item1['price'])+'** - `'+item1['cycle']+'`',inline=True)
                 embed.set_footer(text='Updated at '+str(datetime.datetime.now()+timedelta(hours=7)).split('.')[0]+' ** Powered By VIETTEL')
                 if len(msgs)==1:
                   await thread.send(embed=embed) 
@@ -508,81 +511,30 @@ async def ping():
 
 
 @tree.command( 
-    name="check_amount_in_phone",
-    description="check amount avainable in phone",
+    name="check_available_promotion",
+    description="check available promotion applied on the phone",
     guild=discord.Object(id=GUILDID)
 )
 async def first_command(interaction):
-    await interaction.response.defer()
-    msgs = [msg async for msg in interaction.channel.history()]
-    hasText = False
-    hasImage = False
-    notEdit = False
-    for i, msg in enumerate(msgs):
-        if i == 1 and not msg.author.bot and len(msgs) > 2:
-            content = msg.content
-            files = []
-            temp = []
-            for att in msg.attachments:
-                if 'text' in att.content_type:
-                    content = await att.read()
-                    content = content.decode('utf-8')
-                    hasText = True
-                    with open('content.txt', 'w') as file:
-                        file.write(content)
-                    files.append(discord.File('content.txt'))
-                    temp.append('content.txt')
-                    content = ''
-                elif 'image' in att.content_type:
-                    await att.save(att.filename)
-                    files.append(discord.File(att.filename))
-                    temp.append(att.filename)
-                    hasImage = True
-            await msg.delete()
-        elif i == len(msgs)-1:
-            if 'content' not in locals():
-                content = ''
-            if 'files' not in locals():
-                files = []
-            if 'temp' not in locals():
-                temp = []
-            if len(msgs) == 2 and not msgs[1].author.bot:
-                notEdit = True
-            if not hasText and len(content.strip()) == 0:
-                content = msg.content
-                for att in msg.attachments:
-                    if 'text' in att.content_type:
-                        content = await att.read()
-                        content = content.decode('utf-8')
-                        with open('content.txt', 'w') as file:
-                            file.write(content)
-                        files.append(discord.File('content.txt'))
-                        temp.append('content.txt')
-                        hasText = True
-            if not hasImage:
-                for att in msg.attachments:
-                    if 'image' in att.content_type:
-                        await att.save(att.filename)
-                        files.append(discord.File(att.filename))
-                        temp.append(att.filename)
-            if notEdit:
-                name = re.search(
-                    r'.*Tên sản phẩm: (.*?)\..*', content).group(1)
-                name = name.strip()[0:99]
-                if hasText:
-                    content = ''
-                thread = await interaction.channel.parent.create_thread(name=name, content=content, files=files)
-                await thread.thread.send('Need update!')
-                await interaction.channel.delete()
-            else:
-                if hasText:
-                    content = ''
-                await msg.edit(content=content, attachments=files)
-            for file in temp:
-                if os.path.isfile(file):
-                    os.remove(file)
-        elif i != 0 and i != len(msgs)-1 and msg.author.bot and not notEdit:
-            await msg.delete()
-    if not notEdit:
-        await interaction.edit_original_response(content='Need update!')
+  await interaction.response.defer()
+  if any(item.strip() in interaction.channel.name for item in VIETTELS):
+    msgs=[msg async for msg in interaction.channel.history(oldest_first=True)]
+    header=await loginByChecksum(json.loads(msgs[0].content.replace('\'','\"').replace('True','true').replace('False','false').replace('None','null')))
+    promotions=await getPromotions(header)
+    if promotions:
+      st=''
+      if not os.path.exists('promotions'):
+        os.mkdir('promotions')
+      fileName="promotions/promotion_"+interaction.channel.name+".txt"
+      f = open(fileName, "w",encoding="utf-8")
+      for cate in promotions['data']:
+        st+='🟢'+cate['name']+'\n'
+        for item in cate['list']:
+          st+='🟡🟡'+(item['code'] if 'code' in item else item['pack_code'])+'- '+str(item['price'])+'/ '+item['cycle']+'\n'
+          detail=(Soup((item['detail'] if ('detail' in item and item['detail']) else item['des']),'html.parser')).getText()
+          detail=detail.replace('.','.\n')
+          st+='🔴🔴🔴'+detail+'\n**Đăng ký gói:**\n'+(item['regCommand'] if 'regCommand' in item else 'None')+'\n**Huỷ gói:**\n'+(item['canCommand'] if 'canCommand' in item else 'None')+'\n'
+      f.write(st)
+      f.close()
+      await interaction.edit_original_response(content='Danh sách gói cước ưu đãi áp dụng cho thuê bao **'+interaction.channel.name+'**',attachments =[discord.File(fileName)])
 client.run(os.environ.get('botToken'))
