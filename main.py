@@ -160,47 +160,6 @@ async def on_disconnect():
                 await msgs[0].edit(content='Sessions are `'+str(i)+'` actived')
                 if i==0 and len(msgs)>1:
                     await msgs[-1].delete()
-@tasks.loop(seconds=.5)
-async def checkLive(guild):
-    global SESSION_ID,SESSION_ID_OLD,BOT_NAME,RESULT,BOT_NAME,LAST_MSG
-    if SESSION_ID_OLD!=SESSION_ID:
-        msg=await RESULT[BOT_NAME].fetch_message(LAST_MSG.id)
-        last=int((re.search('Running on `(.*?)`\..*',msg.content).group(1)).split('.')[0])
-        if datetime.datetime.now().timestamp()-last>=10:
-            SESSION_ID_OLD=None
-            msgs=[msg async for msg in RESULT[BOT_NAME].history(oldest_first=True)]
-            await msgs[0].edit(content='Sessions are `1` actived')
-@tasks.loop(seconds=.5)
-async def updateLive(guild):
-    global SESSION_ID,SESSION_ID_OLD,BOT_NAME,LAST_MSG,RESULT
-    msg=await RESULT[BOT_NAME].fetch_message(LAST_MSG.id)
-    old=int((re.search('Running on `(.*?)`\..*',msg.content).group(1)).split('.')[0])
-    if not SESSION_ID_OLD and SESSION_ID!=old:
-        await msg.edit(content='Running on `'+str(SESSION_ID)+'`. Last update at `'+str(datetime.datetime.now().timestamp())+'`')
-        if not taskGetInfo.is_running():
-          taskGetInfo.start(guild)
-        if not taskUpdatePhone.is_running():
-          taskUpdatePhone.start(guild)
-        if not taskSendOtp.is_running():
-          taskSendOtp.start(guild)
-        if not taskLogin.is_running():
-          taskLogin.start(guild)
-    elif SESSION_ID==old:
-        await msg.edit(content='Running on `'+str(SESSION_ID)+'`. Last update at `'+str(datetime.datetime.now().timestamp())+'`')
-@tasks.loop(seconds=1)
-async def taskKeepCookie(guild):
-  RESULT=await getBasic(guild)
-  for thread in RESULT['phonesCh'].threads:
-    try:
-      msgs=[msg async for msg in thread.history(oldest_first=True)]
-      if any(item.strip() in thread.name for item in VIETTELS) and 'header' in msgs[0].content:
-        headers=json.loads(msgs[0].content.replace("'",'"'))
-        async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar()) as session:
-          async with session.get('https://vietteltelecom.vn/thong-tin-tai-khoan',headers=headers['headers']) as res:
-            print(res.status)
-    except Exception as err:
-      print(err)
-      pass
 @tasks.loop(seconds=1)
 async def taskUpdatePhone(guild):
   RESULT=await getBasic(guild)
@@ -243,13 +202,21 @@ async def taskSendOtp(guild):
               await thread.send('New otp sent to '+thread.name)
         except:
           pass
+      elif any(thread.name.startswith(item.strip()) for item in VINAPHONES):
+        try:
+          msgs=[msg async for msg in thread.history()]
+          if len(msgs)==1 and 'loading' in msgs[0].content:
+            rs=await vnpt.sendOtp(thread.name)
+            if rs:
+              await thread.send('New otp sent to '+thread.name)
+        except:
+          pass
       elif any(thread.name.startswith(item.strip()) for item in VIETNAMOBILE):
         try:
           msgs=[msg async for msg in thread.history()]
           if len(msgs)==1 and 'loading' in msgs[0].content:
             rs=await vietnamobile.sendOtp(thread.name)
             if rs:
-              await msgs[0].edit(content=rs)
               await thread.send('New otp sent to '+thread.name)
         except:
           pass
@@ -284,15 +251,32 @@ async def taskLogin(guild):
       elif any(item.strip() in thread.name for item in VINAPHONES):
         try:
           msgs=[msg async for msg in thread.history(oldest_first=True)]
-          if (len(msgs)==1 and 'loading' in msgs[0].content) or ('session' in msgs[0].content and datetime.datetime.now().timestamp()-msgs[0].edited_at.timestamp()>=3600): 
-            otp=msgs[len(msgs)-1].content
+          if 'session' in msgs[0].content and datetime.datetime.now().timestamp()-msgs[0].edited_at.timestamp()>=3600:
             rs=await vnpt.loginByPassword(thread.name)
             if rs:
+              await msgs[0].edit(content=rs)
+          elif 'New otp sent to update password' not in msgs[len(msgs)-1].content and ((len(msgs)==3 and 'loading' in msgs[0].content) ): 
+            otp=msgs[len(msgs)-1].content
+            rs=await vnpt.loginByOtp(thread.name,otp)
+            if rs:
+              print(f'{thread.name} login success')
               for i,msg in enumerate(msgs):
                 if i!=0 and 'headers' not in msgs[0].content:
                   await msg.delete()
                 else: 
                   await msg.edit(content=rs)
+              rs=await vnpt.sendOtp(thread.name,'updatePassword')
+              if rs:
+                await thread.send('New otp sent to update password')
+              else:
+                await thread.send('Something went wrong, try delete channel to restart process')
+          elif len(msgs)>2 and 'New otp sent to update password' in msgs[-2].content:
+            headers=json.loads(msgs[0].content.replace("'",'"'))
+            rs=await vnpt.updatePassword(headers,msgs[-1].content)
+            if rs:
+              for i,msg in enumerate(msgs):
+                if i!=0 and 'headers' in msgs[0].content:
+                  await msg.delete()
         except Exception as err:
           print(err,222)
           pass

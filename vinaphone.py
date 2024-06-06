@@ -12,12 +12,21 @@ import httpx
 
 
 httpx._config.DEFAULT_CIPHERS += ':HIGH:!DH:!aNULL'
-async def sendOtp(phone):
-  url='https://my.vnpt.com.vn/mapi/services/otp_send'
+async def sendOtp(phone,type=None):
+  url='https://api-myvnpt.vnpt.vn/mapi_v2/services/otp_send'
   headers={
     'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0',
   }
-  data={"msisdn":phone,"otp_service":"authen_msisdn","session":""}
+  if not type:
+    type='authen_msisdn'
+  elif type=='updatePassword':
+    type='authen_miss_password'
+  data={
+  "msisdn": '84'+phone[1:],
+  "otp_service": type,
+  "tinh_id": "",
+  "for_test": ""
+}
   req=httpx.post(url,headers=headers,json=data)
   if req.status_code<400:
     print('New OTP sent to '+phone)
@@ -42,25 +51,26 @@ async def loginByPassword(phone,password='5c5d10e87562f09ceb66dbad807cd7a5'):
     js=req.json()
     if js['error_code']=='0':
       print(f'{phone} login success')
-      return {'session':js['session'],'msisdn':js['msisdn'],'phone':phone}
+      return {'headers':headers,'session':js['session'],'msisdn':js['msisdn'],'phone':phone}
   print(f'{phone} can\'t login')
   return False
       
 
-async def login(phone,otp):
-  url='https://my.vnpt.com.vn/mapi/services/authen_msisdn'
+async def loginByOtp(phone,otp):
+  url='https://api-myvnpt.vnpt.vn/mapi_v2/services/authen_msisdn'
   headers={
     'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0'
   }
-  data={"device_info":"Firefox","fcm_registration_token":"","mode":"otp","msisdn":phone,"password":otp,"session":""}
+  data={"device_info":"Firefox","fcm_registration_token":"","mode":"otp","msisdn":'84'+phone[1:],"password":otp,"session":""}
   req=httpx.post(url,headers=headers,json=data)
   if req.status_code<400:
     js=req.json()
-    session=js['session']
-    headers['cookie']=req.headers['set-cookie']
-    cookies=req.cookies.get_dict()
-    print(f'{phone} login success')
-    return {'headers':headers,'session':session,'phone':phone}
+    if js['error_code']!='wrong_otp':
+      session=js['session']
+      headers['cookie']=req.headers['set-cookie']
+      headers['msisdn']='84'+phone[1:]
+      print(f'{phone} login success')
+      return {'headers':headers,'session':session,'phone':phone}
   print(f'{phone} can\'t login')
   return False
   async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar()) as session:
@@ -76,9 +86,24 @@ async def login(phone,otp):
         return {'headers':headers,'session':session,'phone':phone}
   print(f'{phone} can\'t login')
   return False
+async def updatePassword(headers,otp):
+  url='https://api-myvnpt.vnpt.vn/mapi_v2/services/authen_miss_password'
+  data={
+    "password": "5C5D10E87562F09CEB66DBAD807CD7A5",
+    "otp": otp,
+    "api_secret": '',
+    "msisdn": "84"+headers['phone'][1:]
+  }
+  req=httpx.post(url,headers=headers['headers'],json=data)
+  if req.status_code<400:
+    js=req.json()
+    if js['error_code']=='0':
+      print(f'{headers["phone"]} Update password success')
+  print(f'{headers["phone"]} can\'t update password')
+  return False
 async def getInfo(headers):
   url='https://my.vnpt.com.vn/mapi/services/mobile_IN_balances'
-  data1={"msisdn":headers['msisdn'],"session":headers['session']}
+  data1={"msisdn":headers['msisdn'] if 'msisdn' in headers else ('84'+headers['phone'][1:]),"session":headers['session']}
   #ck=re.search('.*TS01d53577=(.*?);.*',headers['headers']['cookie']).group(1)
   header={'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0'}
   req=httpx.post(url,headers=header,json=data1)
