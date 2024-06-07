@@ -1,6 +1,6 @@
 import asyncio
 import websockets
-import os
+import os,sys
 import re,json
 import discord
 from discord.ext import commands, tasks
@@ -75,33 +75,32 @@ async def on_ready():
     try: 
       req=requests.get('http://localhost:8888')
       print(req.status_code)
-      await client.close()
-      exit()
+      #await client.close()
+      sys.exit('Exited')
     except Exception as error:
-      if 'No connection could be made because the target machine actively refused it' in str(error) or ('req' in locals() and req.status_code>=400):
-        server.b()
-        guild = client.get_guild(GUILDID)
-        await tree.sync(guild=guild)
-        guild = client.get_guild(GUILDID)
-        RESULT=await getBasic(guild)
-        if any(item not in str(RESULT['phonesCh'].available_tags) for item in ['🔃Loading','✔Loaded','Viettel','Vinaphone','Vietnamobile','Mobifone']):
-          for item in ['🔃Loading','✔Loaded','Viettel','Vinaphone','Vietnamobile','Mobifone']:
-            if item not in str(RESULT['phonesCh']):
-              await RESULT['phonesCh'].create_tag(name=item)
-        overwrites = {
-            guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            guild.me: discord.PermissionOverwrite(read_messages=True)
-        }
-        if not keepOnline.is_running():
-          keepOnline.start()
-        if not taskGetInfo.is_running():
-          taskGetInfo.start(guild)
-        if not taskUpdatePhone.is_running():
-          taskUpdatePhone.start(guild)
-        if not taskSendOtp.is_running():
-          taskSendOtp.start(guild)
-        if not taskLogin.is_running():
-          taskLogin.start(guild)
+      server.b()
+      guild = client.get_guild(GUILDID)
+      await tree.sync(guild=guild)
+      guild = client.get_guild(GUILDID)
+      RESULT=await getBasic(guild)
+      if any(item not in str(RESULT['phonesCh'].available_tags) for item in ['🔃Loading','✔Loaded','Viettel','Vinaphone','Vietnamobile','Mobifone']):
+        for item in ['🔃Loading','✔Loaded','Viettel','Vinaphone','Vietnamobile','Mobifone']:
+          if item not in str(RESULT['phonesCh']):
+            await RESULT['phonesCh'].create_tag(name=item)
+      overwrites = {
+          guild.default_role: discord.PermissionOverwrite(read_messages=False),
+          guild.me: discord.PermissionOverwrite(read_messages=True)
+      }
+      if not keepOnline.is_running():
+        keepOnline.start()
+      if not taskGetInfo.is_running():
+        taskGetInfo.start(guild)
+      if not taskUpdatePhone.is_running():
+        taskUpdatePhone.start(guild)
+      if not taskSendOtp.is_running():
+        taskSendOtp.start(guild)
+      if not taskLogin.is_running():
+        taskLogin.start(guild)
 @tasks.loop(minutes=15)
 async def keepOnline():
   headers={
