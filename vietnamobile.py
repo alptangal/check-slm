@@ -76,6 +76,7 @@ async def login(headers):
   
 async def getInfo(headers):
   url='https://selfcare.vietnamobile.com.vn/api/profile'
+  print(headers)
   header={
     'user-agent':headers['user-agent'],
     'x-device-id':headers['x-device-id'],
