@@ -286,6 +286,7 @@ async def taskGetInfo(guild):
   RESULT=await getBasic(guild)
   phoneCh=RESULT['phonesCh'].threads+[thread async for thread in RESULT['phonesCh'].archived_threads()]
   for thread in phoneCh:
+    try:
         if any(item.strip() in thread.name for item in VIETTELS):
           try:
             msgs=[msg async for msg in thread.history(oldest_first=True)]
@@ -503,6 +504,9 @@ async def taskGetInfo(guild):
                 await thread.send(owner.mention+'\n')
               for noti in caution:
                 await thread.send(f'⚠️ {noti} 🆘\n')
+    except Exception as error:
+      print(error,111111)
+      pass
 @tasks.loop(seconds=3)
 async def ping(): 
     print(datetime.now())
