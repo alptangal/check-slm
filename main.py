@@ -71,39 +71,17 @@ BASE_URL='https://shoebee-fswaboivdxpaan5ewbppbf.streamlit.app/'
 #https://shoebee-fswaboivdxpaan5ewbppbf.streamlit.app/api/v2/app/disambiguate
 @client.event
 async def on_ready():
-    guild = client.get_guild(GUILDID)
-    await tree.sync(guild=guild)
     global HEADERS, THREADS, USERNAMES,RESULT,BOT_NAME,SESSION_ID,SESSION_ID_OLD,LAST_MSG
     try: 
       req=requests.get('http://localhost:8888')
-      headers={
-        'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0'
-      }
-      async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar()) as session:
-        async with session.get(BASE_URL,headers=headers,allow_redirects=False) as res:
-          if res.status<400:
-            location=res.headers['location']
-            headers['cookie']=''
-            async with session.get(location,headers=headers,allow_redirects=False) as res:
-              cookies = session.cookie_jar.filter_cookies('streamlit.app')
-              for key, cookie in cookies.items():
-                headers['cookie'] += cookie.key +'='+cookie.value+';'
-            async with session.get(BASE_URL+'api/v2/app/disambiguate',headers=headers) as res:
-              if res.status<400:
-                headers['x-csrf-token']=res.headers['x-csrf-token']
-                url=BASE_URL+'api/v2/app/status'
-                req=requests.get(url,headers=headers)
-                js=req.json()
-                print(js)
-                if js['status']!=5:
-                  url=BASE_URL+'api/v2/app/resume'
-                  req=requests.post(url,headers=headers)
-      
+      print(req.status_code)
       await client.close()
       exit()
-    except:
+    except Exception as error:
+      if 'No connection could be made because the target machine actively refused it' in str(error) or ('req' in locals() and req.status_code>=400):
         server.b()
-        
+        guild = client.get_guild(GUILDID)
+        await tree.sync(guild=guild)
         guild = client.get_guild(GUILDID)
         RESULT=await getBasic(guild)
         if any(item not in str(RESULT['phonesCh'].available_tags) for item in ['🔃Loading','✔Loaded','Viettel','Vinaphone','Vietnamobile','Mobifone']):
@@ -309,7 +287,6 @@ async def taskGetInfo(guild):
   RESULT=await getBasic(guild)
   phoneCh=RESULT['phonesCh'].threads+[thread async for thread in RESULT['phonesCh'].archived_threads()]
   for thread in phoneCh:
-    try:
         if any(item.strip() in thread.name for item in VIETTELS):
           try:
             msgs=[msg async for msg in thread.history(oldest_first=True)]
@@ -526,9 +503,6 @@ async def taskGetInfo(guild):
                 await thread.send(owner.mention+'\n')
               for noti in caution:
                 await thread.send(f'⚠️ {noti} 🆘\n')
-    except Exception as error:
-      print(11111,error)
-      pass
 @tasks.loop(seconds=3)
 async def ping(): 
     print(datetime.now())
