@@ -91,7 +91,6 @@ async def updatePassword(headers,otp):
   data={
     "password": "5C5D10E87562F09CEB66DBAD807CD7A5",
     "otp": otp,
-    "api_secret": '',
     "msisdn": "84"+headers['phone'][1:]
   }
   req=httpx.post(url,headers=headers['headers'],json=data)
