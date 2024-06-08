@@ -254,6 +254,8 @@ async def taskLogin(guild):
               for i,msg in enumerate(msgs):
                 if i!=0 and 'headers' in msgs[0].content:
                   await msg.delete()
+            else:
+              await thread.send('Can\'t update password. Try again')
         except Exception as err:
           print(err,222)
           pass
@@ -541,4 +543,4 @@ async def first_command(interaction):
       await interaction.edit_original_response(content='Danh sách gói cước ưu đãi áp dụng cho thuê bao **'+interaction.channel.name+'**',attachments =[discord.File(fileName)])
   else:
     await interaction.edit_original_response(content='No data')
-client.run(os.environ.get('botToken'))
+client.run('MTIwOTQ4NjcxNDY0MTQ0OTAwMA.GF43Vz.RPWxpVmVzi6YhrECaIPlRRziCo2yT1Bb4H-Tug')#os.environ.get('botToken'))
