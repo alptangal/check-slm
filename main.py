@@ -250,12 +250,12 @@ async def taskLogin(guild):
           elif len(msgs)>2 and 'New otp sent to update password' in msgs[-2].content:
             headers=json.loads(msgs[0].content.replace("'",'"'))
             rs=await vnpt.updatePassword(headers,msgs[-1].content)
-            if rs:
+            if rs['result']:
               for i,msg in enumerate(msgs):
                 if i!=0 and 'headers' in msgs[0].content:
                   await msg.delete()
             else:
-              await thread.send('Can\'t update password. Try again')
+              await thread.send(rs['content'])
         except Exception as err:
           print(err,222)
           pass

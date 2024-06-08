@@ -99,8 +99,9 @@ async def updatePassword(headers,otp):
     js=req.json()
     if js['error_code']=='0':
       print(f'{headers["phone"]} Update password success')
+      return {'result':True}
   print(f'{headers["phone"]} can\'t update password')
-  return False
+  return {'result':False,'content':js}
 async def getInfo(headers):
   url='https://my.vnpt.com.vn/mapi/services/mobile_IN_balances'
   data1={"msisdn":headers['msisdn'] if 'msisdn' in headers else ('84'+headers['phone'][1:]),"session":headers['session']}
