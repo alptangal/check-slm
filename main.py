@@ -168,120 +168,128 @@ async def taskUpdatePhone(guild):
 @tasks.loop(seconds=3)
 async def taskSendOtp(guild):
   RESULT=await getBasic(guild)
-  phoneCh=RESULT['phonesCh'].threads+[thread async for thread in RESULT['phonesCh'].archived_threads()]
-  for thread in phoneCh:
-      if any(item.strip() in thread.name for item in VIETTELS):
-        try:
-          msgs=[msg async for msg in thread.history()]
-          if len(msgs)==1 and 'loading' in msgs[0].content:
-            rs=await sentOtpReg(thread.name)
-            if rs:
-              await thread.send('New otp sent to '+thread.name)
-        except:
-          pass
-      elif any(thread.name.startswith(item.strip()) for item in VINAPHONES):
-        try:
-          msgs=[msg async for msg in thread.history()]
-          if len(msgs)==1 and 'loading' in msgs[0].content:
-            rs=await vnpt.sendOtp(thread.name)
-            if rs:
-              await thread.send('New otp sent to '+thread.name)
-        except:
-          pass
-      elif any(thread.name.startswith(item.strip()) for item in VIETNAMOBILE):
-        try:
-          msgs=[msg async for msg in thread.history()]
-          if len(msgs)==1 and 'loading' in msgs[0].content:
-            rs=await vietnamobile.sendOtp(thread.name)
-            if rs:
-              await thread.send('New otp sent to '+thread.name)
-        except:
-          pass
+  try:
+    phoneCh=RESULT['phonesCh'].threads+[thread async for thread in RESULT['phonesCh'].archived_threads()]
+    for thread in phoneCh:
+        if any(item.strip() in thread.name for item in VIETTELS):
+          try:
+            msgs=[msg async for msg in thread.history()]
+            if len(msgs)==1 and 'loading' in msgs[0].content:
+              rs=await sentOtpReg(thread.name)
+              if rs:
+                await thread.send('New otp sent to '+thread.name)
+          except:
+            pass
+        elif any(thread.name.startswith(item.strip()) for item in VINAPHONES):
+          try:
+            msgs=[msg async for msg in thread.history()]
+            if len(msgs)==1 and 'loading' in msgs[0].content:
+              rs=await vnpt.sendOtp(thread.name)
+              if rs:
+                await thread.send('New otp sent to '+thread.name)
+          except:
+            pass
+        elif any(thread.name.startswith(item.strip()) for item in VIETNAMOBILE):
+          try:
+            msgs=[msg async for msg in thread.history()]
+            if len(msgs)==1 and 'loading' in msgs[0].content:
+              rs=await vietnamobile.sendOtp(thread.name)
+              if rs:
+                await thread.send('New otp sent to '+thread.name)
+          except:
+            pass
+  except Exception as error:
+    print(error,12122121)
+    pass
 
 @tasks.loop(seconds=3)
 async def taskLogin(guild):
   print('taskLogin is running')
   RESULT=await getBasic(guild)
-  phoneCh=RESULT['phonesCh'].threads#+[thread async for thread in RESULT['phonesCh'].archived_threads()]
-  for thread in phoneCh:
-      if any(item.strip() in thread.name for item in VIETTELS):
-        try:
-          msgs=[msg async for msg in thread.history(oldest_first=True)]
-          if len(msgs)==3 and 'loading' in msgs[0].content: 
-            otp=msgs[len(msgs)-1].content
-            rs=await register(thread.name,otp)
-            if rs['result']:
-              log=await loginByChecksum(rs)
-              if log:
+  try:
+    phoneCh=RESULT['phonesCh'].threads#+[thread async for thread in RESULT['phonesCh'].archived_threads()]
+    for thread in phoneCh:
+        if any(item.strip() in thread.name for item in VIETTELS):
+          try:
+            msgs=[msg async for msg in thread.history(oldest_first=True)]
+            if len(msgs)==3 and 'loading' in msgs[0].content: 
+              otp=msgs[len(msgs)-1].content
+              rs=await register(thread.name,otp)
+              if rs['result']:
+                log=await loginByChecksum(rs)
+                if log:
+                  for i,msg in enumerate(msgs):
+                    if i!=0 and 'headers' not in msgs[0].content:
+                      await msg.delete()
+                    else: 
+                      await msg.edit(content=rs)
+                else:
+                  await thread.send('Try re-create account again!')
+              else:
+                await thread.send(rs['message'])
+          except Exception as err:
+            print(err,333)
+            pass
+        elif any(item.strip() in thread.name for item in VINAPHONES):
+          try:
+            msgs=[msg async for msg in thread.history(oldest_first=True)]
+            if 'session' in msgs[0].content and datetime.datetime.now().timestamp()-msgs[0].edited_at.timestamp()>=3600:
+              rs=await vnpt.loginByPassword(thread.name)
+              if rs:
+                await msgs[0].edit(content=rs)
+            elif 'New otp sent to update password' not in msgs[len(msgs)-1].content and ((len(msgs)==3 and 'loading' in msgs[0].content) ): 
+              otp=msgs[len(msgs)-1].content
+              rs=await vnpt.loginByOtp(thread.name,otp)
+              if rs:
+                print(f'{thread.name} login success')
                 for i,msg in enumerate(msgs):
                   if i!=0 and 'headers' not in msgs[0].content:
                     await msg.delete()
                   else: 
                     await msg.edit(content=rs)
-              else:
-                await thread.send('Try re-create account again!')
-            else:
-              await thread.send(rs['message'])
-        except Exception as err:
-          print(err,333)
-          pass
-      elif any(item.strip() in thread.name for item in VINAPHONES):
-        try:
-          msgs=[msg async for msg in thread.history(oldest_first=True)]
-          if 'session' in msgs[0].content and datetime.datetime.now().timestamp()-msgs[0].edited_at.timestamp()>=3600:
-            rs=await vnpt.loginByPassword(thread.name)
-            if rs:
-              await msgs[0].edit(content=rs)
-          elif 'New otp sent to update password' not in msgs[len(msgs)-1].content and ((len(msgs)==3 and 'loading' in msgs[0].content) ): 
-            otp=msgs[len(msgs)-1].content
-            rs=await vnpt.loginByOtp(thread.name,otp)
-            if rs:
-              print(f'{thread.name} login success')
-              for i,msg in enumerate(msgs):
-                if i!=0 and 'headers' not in msgs[0].content:
-                  await msg.delete()
-                else: 
-                  await msg.edit(content=rs)
-              rs=await vnpt.sendOtp(thread.name,'updatePassword')
-              if rs:
-                await thread.send('New otp sent to update password')
-              else:
-                await thread.send('Something went wrong, try delete channel to restart process')
-          elif len(msgs)>2 and 'New otp sent to update password' in msgs[-2].content:
-            headers=json.loads(msgs[0].content.replace("'",'"'))
-            rs=await vnpt.updatePassword(headers,msgs[-1].content)
-            if rs['result']:
-              for i,msg in enumerate(msgs):
-                if i!=0 and 'headers' in msgs[0].content:
-                  await msg.delete()
-            else:
-              await thread.send(rs['content'])
-        except Exception as err:
-          print(err,222)
-          pass
-      elif any(item.strip() in thread.name for item in VIETNAMOBILE):
-        try:
-          msgs=[msg async for msg in thread.history(oldest_first=True)]
-          if (len(msgs)==3 and 'transId' in msgs[0].content) or ('session' in msgs[0].content and datetime.datetime.now().timestamp()-msgs[0].edited_at.timestamp()>=3600): 
-            otp=msgs[len(msgs)-1].content
-            headers=json.loads(msgs[0].content.replace('\'','\"').replace('True','true').replace('False','false').replace('None','null'))
-            if headers['transId']!=None:
-              rs=await vietnamobile.register(headers,otp)
-              if rs['result']==True:
-                headers=await vietnamobile.login(rs['headers'])
-                if headers:
-                  for i,msg in enumerate(msgs):
-                    if i!=0 and 'headers' not in msgs[0].content:
-                      await msg.delete() 
-                    else: 
-                      await msg.edit(content=rs['headers'])
+                rs=await vnpt.sendOtp(thread.name,'updatePassword')
+                if rs:
+                  await thread.send('New otp sent to update password')
                 else:
-                  await thread.send('Try re-create account again')
+                  await thread.send('Something went wrong, try delete channel to restart process')
+            elif len(msgs)>2 and 'New otp sent to update password' in msgs[-2].content:
+              headers=json.loads(msgs[0].content.replace("'",'"'))
+              rs=await vnpt.updatePassword(headers,msgs[-1].content)
+              if rs['result']:
+                for i,msg in enumerate(msgs):
+                  if i!=0 and 'headers' in msgs[0].content:
+                    await msg.delete()
               else:
-                await thread.send(rs['message'])
-        except Exception as error:
-          print(error,3333)
-          pass
+                await thread.send(rs['content'])
+          except Exception as err:
+            print(err,222)
+            pass
+        elif any(item.strip() in thread.name for item in VIETNAMOBILE):
+          try:
+            msgs=[msg async for msg in thread.history(oldest_first=True)]
+            if (len(msgs)==3 and 'transId' in msgs[0].content) or ('session' in msgs[0].content and datetime.datetime.now().timestamp()-msgs[0].edited_at.timestamp()>=3600): 
+              otp=msgs[len(msgs)-1].content
+              headers=json.loads(msgs[0].content.replace('\'','\"').replace('True','true').replace('False','false').replace('None','null'))
+              if headers['transId']!=None:
+                rs=await vietnamobile.register(headers,otp)
+                if rs['result']==True:
+                  headers=await vietnamobile.login(rs['headers'])
+                  if headers:
+                    for i,msg in enumerate(msgs):
+                      if i!=0 and 'headers' not in msgs[0].content:
+                        await msg.delete() 
+                      else: 
+                        await msg.edit(content=rs['headers'])
+                  else:
+                    await thread.send('Try re-create account again')
+                else:
+                  await thread.send(rs['message'])
+          except Exception as error:
+            print(error,3333)
+            pass
+  except Exception as error:
+    print(error,12131212)
+    pass
 @tasks.loop(seconds=1)  
 async def taskGetInfo(guild):
   print('taskGetInfo is running')

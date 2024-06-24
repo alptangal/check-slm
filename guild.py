@@ -2,6 +2,7 @@ import asyncio
 
 
 async def getBasic(guild):
+  try:
     for category in guild.categories:
         if 'viettel' in category.name:
             for channel in category.channels:
@@ -17,3 +18,6 @@ async def getBasic(guild):
                 if 'status' in channel.name.lower():
                     statusBotCh=channel
     return {'phonesCh': phoneCh,'rawsCh':rawsCh,'countCh':countCh,'statusBotCh':(statusBotCh if 'statusBotCh' in locals() else None),'botsCategory':(botsCh if 'botsCh' in locals() else None)}
+  except Exception as error:
+    print(error,'guild.py')
+    pass
