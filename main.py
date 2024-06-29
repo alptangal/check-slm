@@ -13,11 +13,16 @@ from guild import *
 from viettel import *
 import vinaphone as vnpt
 import vietnamobile
+import mobifone as mobi
 import aiohttp
 import ast
 import collections 
 import websocketsServer,websocketsClient
 from bs4 import BeautifulSoup as Soup
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 
 intents = discord.Intents.default()
@@ -29,6 +34,7 @@ VINAPHONES=' 091, 094, 088, 081, 082, 083, 084, 085'
 VINAPHONES=VINAPHONES.split(',')
 VIETNAMOBILE='052, 056, 058, 092'
 VIETNAMOBILE=VIETNAMOBILE.split(',')
+MOBIFONE=['090','093','089','070','076','077','078','079']
 HEADERS = []
 THREADS = []
 USERNAMES = [] 
@@ -198,15 +204,24 @@ async def taskSendOtp(guild):
                 await thread.send('New otp sent to '+thread.name)
           except:
             pass
+        elif any(thread.name.startswith(item.strip()) for item in MOBIFONE):
+          try:
+            msgs=[msg async for msg in thread.history()]
+            if len(msgs)==1 and 'loading' in msgs[0].content:
+              rs=await mobi.sendOtp(thread.name)
+              if rs['result']:
+                await thread.send('New otp sent to '+thread.name)
+          except:
+            pass
   except Exception as error:
     print(error,12122121)
     pass
 
 @tasks.loop(seconds=3)
 async def taskLogin(guild):
-  print('taskLogin is running')
-  RESULT=await getBasic(guild)
-  try:
+    print('taskLogin is running')
+    RESULT=await getBasic(guild)
+
     phoneCh=RESULT['phonesCh'].threads#+[thread async for thread in RESULT['phonesCh'].archived_threads()]
     for thread in phoneCh:
         if any(item.strip() in thread.name for item in VIETTELS):
@@ -287,9 +302,23 @@ async def taskLogin(guild):
           except Exception as error:
             print(error,3333)
             pass
-  except Exception as error:
-    print(error,12131212)
-    pass
+        elif any(item.strip() in thread.name for item in MOBIFONE):
+            msgs=[msg async for msg in thread.history(oldest_first=True)]
+            if (len(msgs)==3 and 'loading' in msgs[0].content):#or ('session' in msgs[0].content and datetime.datetime.now().timestamp()-msgs[0].edited_at.timestamp()>=3600): 
+              otp=msgs[len(msgs)-1].content
+              rs=await mobi.loginByOtp(thread.name,otp)
+              if rs['result']==True:
+                headers=await mobi.getInfo(rs['headers'])
+                if headers['result']:
+                  for i,msg in enumerate(msgs):
+                    if i!=0 and 'headers' not in msgs[0].content:
+                      await msg.delete() 
+                    else: 
+                      await msg.edit(content=rs['headers'])
+                else:
+                  await thread.send('Try re-create account again')
+              else:
+                await thread.send(rs['message'])
 @tasks.loop(seconds=1)  
 async def taskGetInfo(guild):
   print('taskGetInfo is running')
@@ -496,6 +525,58 @@ async def taskGetInfo(guild):
                 embed.add_field(name="Point", value=js['LMS_POINT'],inline=True)
                 embed.set_footer(text='Updated at '+str(datetime.datetime.now()+timedelta(hours=7)).split('.')[0]+' ** Powered By VINAPHONE')
 
+                if len(msgs)==1:
+                  await thread.send(embed=embed) 
+                else:
+                  await msgs[1].edit(embed=embed)
+                if len(caution)>0:
+                  phone=thread.name
+                  async for msg in RESULT['rawsCh'].history():
+                    if phone.strip()==msg.content.strip():
+                      owner=msg.author
+                if len(caution)>0 and len(msgs)==2 and 'owner' in locals():
+                  await thread.send(owner.mention+'\n')
+                elif len(caution)>0 and len(msgs)>2 and 'owner' in locals():
+                  msgs=[msg async for msg in thread.history(oldest_first=True)]
+                  for i,msg in enumerate(msgs):
+                    if i!=0 and i!=1:
+                      await msg.delete()
+                  await thread.send(owner.mention+'\n')
+                for noti in caution:
+                  await thread.send(f'⚠️ {noti} 🆘\n')
+          elif any(item.strip() in thread.name for item in MOBIFONE):
+            msgs=[msg async for msg in thread.history(oldest_first=True)]
+            if len(msgs)==1 and 'loading' not in msgs[0].content or 'userId' in msgs[0].content:
+              #try:
+              headers=ast.literal_eval(msgs[0].content)
+              rs=await mobi.getInfo(headers)
+              if rs['result']:
+                if any(it not in str(thread.applied_tags).lower() for it in ['loaded','mobifone']):
+                  tags=[]
+                  for tag in RESULT['phonesCh'].available_tags:
+                    if any(item in tag.name.lower() for item in ['loaded','mobifone']):
+                      await thread.add_tags(tag)
+                    elif 'loading' in tag.name.lower():
+                      await thread.remove_tags(tag)
+                caution=[]
+                data=rs['data']
+                embed = discord.Embed(title='0'+headers['phone'], description=data['title']+'/ '+data['typeText'],colour=discord.Colour.from_rgb(0,47,203)) #,color=Hex code
+                embed.add_field(name="Owner", value=data['fullname'],inline=True)
+                embed.add_field(name="Gender", value='Male' if data['gender']==1 else 'Female',inline=True)
+                embed.add_field(name="Email", value=data['email'],inline=True)
+                embed.add_field(name="CCCD", value=data['idNumberShow'],inline=True)
+                embed.add_field(name="CCCD_Date", value=data['issueDateShow'],inline=True)
+                embed.add_field(name="ID_Place", value=data['issuePlaceTextShow'],inline=True)
+                embed.add_field(name="Location", value=data['nationality'],inline=True) 
+                embed.add_field(name="Birthday", value=data['birthDateShow'],inline=True)
+                embed.add_field(name=" ", value='',inline=False)
+                embed.add_field(name="Tài Khoản Chính", value=data['balance']+' đồng- expire: '+data['period'],inline=True)
+                if int(data['balance'])<5000:
+                  caution.append('**Too low balance, need charge more money**')
+                exp=datetime.datetime.strptime(data['period'],f'%d/%m/%Y')
+                if datetime.datetime.now().timestamp()-exp.timestamp()>4320000:
+                  caution.append('**Balance expired soon, charge more money to keep SIM live**')
+                embed.set_footer(text='Updated at '+str(datetime.datetime.now()+timedelta(hours=7)).split('.')[0]+' ** Powered By MOBIFONE')
                 if len(msgs)==1:
                   await thread.send(embed=embed) 
                 else:
