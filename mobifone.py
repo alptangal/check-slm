@@ -81,5 +81,5 @@ async def getInfo(headers):
                                 js['data']=js['data'][0]|js1['data']
                                 print(f'{headers["phone"]} get info success')
                                 return {'result':True,'data':js['data']}
-    print(f'{headers["phone"]} can\'t get info- {js['errors']}')
+    print(f'{headers["phone"]} can\'t get info- {js["errors"]}')
     return {'result':False}
