@@ -303,6 +303,7 @@ async def taskLogin(guild):
             print(error,3333)
             pass
         elif any(item.strip() in thread.name for item in MOBIFONE):
+          try:
             msgs=[msg async for msg in thread.history(oldest_first=True)]
             if (len(msgs)==3 and 'loading' in msgs[0].content):#or ('session' in msgs[0].content and datetime.datetime.now().timestamp()-msgs[0].edited_at.timestamp()>=3600): 
               otp=msgs[len(msgs)-1].content
@@ -319,6 +320,9 @@ async def taskLogin(guild):
                   await thread.send('Try re-create account again')
               else:
                 await thread.send(rs['message'])
+          except Exception as error:
+            print(error,4444)
+            pass
 @tasks.loop(seconds=1)  
 async def taskGetInfo(guild):
   print('taskGetInfo is running')
