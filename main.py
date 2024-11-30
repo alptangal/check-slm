@@ -20,7 +20,7 @@ import collections
 import websocketsServer,websocketsClient
 from bs4 import BeautifulSoup as Soup
 from dotenv import load_dotenv
-
+import yarl
 load_dotenv()
 
 
@@ -121,7 +121,7 @@ async def keepOnline():
         location=res.headers['location']
         headers['cookie']=''
         async with session.get(location,headers=headers,allow_redirects=False) as res:
-          cookies = session.cookie_jar.filter_cookies('streamlit.app')
+          cookies = session.cookie_jar.filter_cookies(yarl.URL('http://streamlit.app'))
           for key, cookie in cookies.items():
             headers['cookie'] += cookie.key +'='+cookie.value+';'
         async with session.get(BASE_URL+'api/v2/app/disambiguate',headers=headers) as res:
