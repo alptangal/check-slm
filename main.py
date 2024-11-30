@@ -35,6 +35,9 @@ VINAPHONES=VINAPHONES.split(',')
 VIETNAMOBILE='052, 056, 058, 092'
 VIETNAMOBILE=VIETNAMOBILE.split(',')
 MOBIFONE=['090','093','089','070','076','077','078','079']
+'''VIETNAMOBILE=[]
+VIETTELS=[]
+VINAPHONES=[]'''
 HEADERS = []
 THREADS = []
 USERNAMES = [] 
@@ -323,7 +326,7 @@ async def taskLogin(guild):
           except Exception as error:
             print(error,4444)
             pass
-@tasks.loop(seconds=1)  
+@tasks.loop(minutes=1)  
 async def taskGetInfo(guild):
   print('taskGetInfo is running')
   RESULT=await getBasic(guild)

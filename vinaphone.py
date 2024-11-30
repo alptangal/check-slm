@@ -10,7 +10,7 @@ import urllib3,re
 
 import httpx
 
-
+print(httpx.__version__)
 httpx._config.DEFAULT_CIPHERS += ':HIGH:!DH:!aNULL'
 async def sendOtp(phone,type=None):
   url='https://api-myvnpt.vnpt.vn/mapi_v2/services/otp_send'
